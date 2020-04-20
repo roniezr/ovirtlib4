@@ -38,7 +38,7 @@ you can use this library and contribute to the community by extending it
 to support as much as possible simple oVirt methods.
 
 
-**Project Requirments**
+**Project Vision**
 ----------------------
 1. Fully integrated with the parent ovirtsdk4
 2. Quickly and simply use of oVirt REST commands
@@ -47,25 +47,23 @@ to support as much as possible simple oVirt methods.
 **Main Concept**
 ----------------
 It all starts with the OvirtLib() main class
-This class holds the oVirt Collections and it's used as
+This class holds the oVirt Collections and it used as
 the root point accessing any oVirt entity, only by using
 class-path navigation.
 
-| Each collection return a list of CollectionEntity() classes
+| Each collection return a list of **CollectionEntity()** classes
 | Each CollectionEntity() class include two fields
 
-- **CollectionEntity.entity** that hold the Entity type, e.g.: ovirtsdk4.types.Vm
-  Ovirtsdk4 holds the Entity property here.
+- **CollectionEntity.entity** hold the Entity type, (e.g.: ovirtsdk4.types.Vm) include the Entity properties.
 
-- **CollectionEntity.service** that hold the Entity service,
-|  e.g.: ovirtsdk4.system_service().vms_service().vm_service()
-|  Ovirtsdk4 holds the Entiry actions and links here.
-|  To retreive a link you can use the **CollectionEntity.follow_link()** method
+- **CollectionEntity.service** hold the Entity service, that holds the Entiry 'actions' and 'links'.
 
-|  **Note:** The goal of the project is to reduce as many calls as possible to
-|  the follow_link() method, it is recommended to integrate it inside the CollectionEntity object.
+|
+**follow_link():**
+ To retreive a link you can use the **CollectionEntity.follow_link()** method
+|     **Note:** It is recommended to integrate it inside the CollectionEntity object so it can be called through class-path navigation
 
-  *e.g.*:
+  *As followed e.g.:*:
 
  .. code-block:: python
 
@@ -73,8 +71,26 @@ class-path navigation.
 	    def get_nics(self):
 		return self.follow_link(link=self.service.nics)
 
-- Functions starts with **'get*()'** or **list()** are retrieving data from the remote oVirt Engine.
+	engine.vms.list()[0].get_nics()
+|
+|     The above follow_link() command will return the "CollectionEntiry.entiry" field only,
+|     to retreive the Entiry service as well, it require to pass the CollectionClass object as well. see following example:
 
+ .. code-block:: python
+
+   from . import disks
+
+   class VmEntity(CollectionEntity):
+
+      def get_disk_attachments(self):
+          """ Return list of all VM disks: [CollectionEntity] """
+          return self.follow_link(
+              # We want to retrieve VM disk so a disk Collection should be pass
+              collection_service=disks.Disks(self.connection),
+              link=self.service.disk_attachments
+          )
+
+- Functions starts with **'get*()'** or **list()** are retrieving data from the remote oVirt Engine.
 
 **OvirtSdk4 vs. OvirtLib**
 ---------------------------
