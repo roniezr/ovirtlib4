@@ -4,7 +4,7 @@
 
 The **Ovirtlib4 Project** is a wrapper for the OvirtSdk4 project,
 It fully integrated with OvirtSdk4.
-You can use the benefits of this wrapper without losing 
+You can use the benefits of this wrapper without losing
 any OvirtSdk4 abilities
 
 
@@ -39,7 +39,7 @@ to support as much as possible simple oVirt methods.
 
 
 **Project Requirments**
----------------------- 
+----------------------
 1. Fully integrated with the parent ovirtsdk4
 2. Quickly and simply use of oVirt REST commands
 
@@ -48,7 +48,7 @@ to support as much as possible simple oVirt methods.
 ----------------
 It all starts with the OvirtLib() main class
 This class holds the oVirt Collections and it's used as
-the root point accessing any oVirt entity, only by using 
+the root point accessing any oVirt entity, only by using
 class-path navigation.
 
 | Each collection return a list of CollectionEntity() classes
@@ -57,7 +57,7 @@ class-path navigation.
 - **CollectionEntity.entity** that hold the Entity type, e.g.: ovirtsdk4.types.Vm
   Ovirtsdk4 holds the Entity property here.
 
-- **CollectionEntity.service** that hold the Entity service, 
+- **CollectionEntity.service** that hold the Entity service,
 |  e.g.: ovirtsdk4.system_service().vms_service().vm_service()
 |  Ovirtsdk4 holds the Entiry actions and links here.
 |  To retreive a link you can use the **CollectionEntity.follow_link()** method
@@ -72,14 +72,13 @@ class-path navigation.
 	class VmEntity(CollectionEntity):
 	    def get_nics(self):
 		return self.follow_link(link=self.service.nics)
-  
-- Functions starts with **'get*()'** or **list()**
-are retrieving data from the remote oVirt Engine.
+
+- Functions starts with **'get*()'** or **list()** are retrieving data from the remote oVirt Engine.
 
 
 **OvirtSdk4 vs. OvirtLib**
-------------------------------------
- *Retrieve VMs via OvirtSdk4*:
+---------------------------
+ *Retrieving VMs via OvirtSdk4*:
 
  .. code-block:: python
 
@@ -92,7 +91,8 @@ are retrieving data from the remote oVirt Engine.
 
   ovirtlib.vms.list()
 
-|
+list() and get()
+-----------------
 | *list()* and *get()* are fully integrated with OvirtSdk4
 | so you can use vms.list(search="name=VM_name") to retrieve a special VM
 |
@@ -102,23 +102,25 @@ are retrieving data from the remote oVirt Engine.
 
   vms.list(search="name!=HostedEngine")
 
-*CollectionEntiry*
+CollectionEntiry
 ------------------
-| vm = ovirtlib.vms.list()[0]      # List() return CollectionEntiry() class
-| vm.entity                        # entity, hold the Entity fields
-| vm.service                       # service, hold the Entity actions and links
+  .. code-block:: python
 
- *At the above commands 'vm.entity' is equivalent to*:
+   vm = ovirtlib.vms.list()[0]      # List() return CollectionEntiry() class
+   vm.entity                        # entity, hold the Entity fields
+   vm.service                       # service, hold the Entity actions and links
 
-.. code-block:: python
-
-  vm = ovirtsdk4.system_service().vms_service().list()[0]
-
- *And 'vm.service' is equivalent to*:
+  At the above commands **vm.entity** is equivalent to:
 
   .. code-block:: python
 
-  vm_service = ovirtsdk4.system_service().vms_service().vm_service(id=vm.id).get()
+    vm = ovirtsdk4.system_service().vms_service().list()[0]
+
+  And **vm.service** is equivalent to:
+
+  .. code-block:: python
+
+   vm_service = ovirtsdk4.system_service().vms_service().vm_service(id=vm.id).get()
 
 
 **Examples**
@@ -127,9 +129,9 @@ are retrieving data from the remote oVirt Engine.
  *Initialize the class*:
 
  .. code-block:: python
-  
+
   from ovirtlib4 import ovirtlib
-  engine = ovirtlib.OvirtLib(host="192.168.1.100", password="engine_admin_password") 
+  engine = ovirtlib.OvirtLib(host="192.168.1.100", password="engine_admin_password")
 
  *Get and start all VMs*:
 
@@ -139,7 +141,7 @@ are retrieving data from the remote oVirt Engine.
   for vm in vms:
     print("Starting VM {name}".format(name=vm.entity.name))
     vm.service.start()
- 
+
  *Get all hosts*:
 
  .. code-block:: python
