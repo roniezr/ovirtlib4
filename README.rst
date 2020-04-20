@@ -16,9 +16,26 @@
 
 **Installation**
 ----------------
+
  .. code-block:: bash
 
+  $ export PYCURL_SSL_LIBRARY=openssl
   $ pip install git+https://github.com/roniezr/ovirtlib4.git
+
+ PYCURL_SSL_LIBRARY is required to install "pycurl" that required by ovirtsdk4,
+ If you encounter the following error while import ovirtsdk4 or ovirtlib4
+
+ .. code-block:: bash
+
+  ImportError: pycurl: libcurl link-time ssl backend (openssl) is different from compile-time ssl backend (nss)
+
+ Then run the following commands to fix it:
+
+ .. code-block:: bash
+
+  $ export PYCURL_SSL_LIBRARY=openssl
+  $ pip uninstall pycurl
+  $ pip install pycurl --no-cache-dir
 
 
 **Introduction**
@@ -142,7 +159,7 @@ CollectionEntiry
 **Examples**
 ------------------
 
- Initialize the class:
+ Initialize the OvirtLib class e.g.:
 
  .. code-block:: python
 
@@ -177,4 +194,3 @@ CollectionEntiry
   - git clone https://github.com/roniezr/ovirtlib4.git
 
   - It is recommended to read ovirtsdk4 documentation before starting to contribute to this project https://access.redhat.com/documentation/en-us/red_hat_virtualization/4.3/pdf/python_sdk_guide/Red_Hat_Virtualization-4.3-Python_SDK_Guide-en-US.pdf
-
