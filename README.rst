@@ -58,13 +58,14 @@ class-path navigation.
   Ovirtsdk4 holds the Entity property here.
 
 - **CollectionEntity.service** that hold the Entity service, 
-  e.g.: ovirtsdk4.system_service().vms_service().vm_service()  
-  Ovirtsdk4 holds the Entiry actions and links here.
-  To retreive a link you can use the **CollectionEntity.follow_link()** method
-  **Note:** The goal of the project is to reduce as many calls as possible to 
-  the follow_link() nethod, it is recommended to intergrate it inside the 
-  CollectionEntity object.
-  e.g.:
+|  e.g.: ovirtsdk4.system_service().vms_service().vm_service()
+|  Ovirtsdk4 holds the Entiry actions and links here.
+|  To retreive a link you can use the **CollectionEntity.follow_link()** method
+
+|  **Note:** The goal of the project is to reduce as many calls as possible to
+|  the follow_link() method, it is recommended to integrate it inside the CollectionEntity object.
+
+  *e.g.*:
 
  .. code-block:: python
 
@@ -72,11 +73,11 @@ class-path navigation.
 	    def get_nics(self):
 		return self.follow_link(link=self.service.nics)
   
-| - Any function that starts with the word **'get*()'** or **list()**
-|   is retrieving data from the remote oVirt Engine.
+- Functions starts with **'get*()'** or **list()**
+are retrieving data from the remote oVirt Engine.
 
 
-**OvirtSdk4 vs. OvirtLib examples**
+**OvirtSdk4 vs. OvirtLib**
 ------------------------------------
  *Retrieve VMs*:
 
@@ -88,23 +89,34 @@ class-path navigation.
 
  .. code-block:: python
 
- ovirtlib.vms.list() or ovirtlib.vms.get()
-
-| list() & get() fully integrated with ovirtsdk4
+ ovirtlib.vms.list()
+ # or
+ ovirtlib.vms.get()
+|
+| *list()* and *get()* are fully integrated with OvirtSdk4
 | so you can use vms.list(search="name=VM_name") to retrieve a special VM
-| e.g.: vms.list(search="name!=HostedEngine") will return all VM except the HostedEngine VM
- 
+|
+  *e.g.: the following will return all VM except the HostedEngine VM*:
+
+ .. code-block:: python
+
+  vms.list(search="name!=HostedEngine")
+
 | vm = ovirtlib.vms.list()[0]
 | vm.entity
 | vm.service
 
-| vm.entity
-| equivalent to:
-| vm = ovirtsdk4.system_service().vms_service().list()[0]
+ *'vm.entity' equivalent to*:
 
-| vm.service
-| equivalent to:
-| vm_service = ovirtsdk4.system_service().vms_service().vm_service(id=vm.id).get()
+.. code-block:: python
+
+ vm = ovirtsdk4.system_service().vms_service().list()[0]
+
+ *'vm.service' equivalent to*:
+
+  .. code-block:: python
+
+  vm_service = ovirtsdk4.system_service().vms_service().vm_service(id=vm.id).get()
 
 
 **Examples**
