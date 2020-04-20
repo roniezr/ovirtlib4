@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import ovirtsdk4
-# from . import(
-from art.rhevm_api.ovirtlib4 import (
+from .import(
     clusters,
     data_centers,
     disks,
