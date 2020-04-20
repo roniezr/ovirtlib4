@@ -79,19 +79,19 @@ are retrieving data from the remote oVirt Engine.
 
 **OvirtSdk4 vs. OvirtLib**
 ------------------------------------
- *Retrieve VMs*:
+ *Retrieve VMs via OvirtSdk4*:
 
  .. code-block:: python
 
- ovirtsdk4.system_service().vms_service().list()
+  ovirtsdk4.system_service().vms_service().list()
 
- *equivalent to*:
+
+ *Is equivalent for the following OvirtLib4 command*:
 
  .. code-block:: python
 
- ovirtlib.vms.list()
- # or
- ovirtlib.vms.get()
+  ovirtlib.vms.list()
+
 |
 | *list()* and *get()* are fully integrated with OvirtSdk4
 | so you can use vms.list(search="name=VM_name") to retrieve a special VM
@@ -102,17 +102,19 @@ are retrieving data from the remote oVirt Engine.
 
   vms.list(search="name!=HostedEngine")
 
-| vm = ovirtlib.vms.list()[0]
-| vm.entity
-| vm.service
+*CollectionEntiry*
+------------------
+| vm = ovirtlib.vms.list()[0]      # List() return CollectionEntiry() class
+| vm.entity                        # entity, hold the Entity fields
+| vm.service                       # service, hold the Entity actions and links
 
- *'vm.entity' equivalent to*:
+ *At the above commands 'vm.entity' is equivalent to*:
 
 .. code-block:: python
 
- vm = ovirtsdk4.system_service().vms_service().list()[0]
+  vm = ovirtsdk4.system_service().vms_service().list()[0]
 
- *'vm.service' equivalent to*:
+ *And 'vm.service' is equivalent to*:
 
   .. code-block:: python
 
