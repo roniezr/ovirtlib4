@@ -46,19 +46,34 @@ to support as much as possible simple oVirt methods.
 
 **Main Concept**
 ----------------
-It all starts with the OvirtLib() main class.
-This class holds the oVirt Collections and it used as
-the root point accessing any oVirt entity, only by using
+It all starts with the OvirtLib() main class
+This class holds the oVirt Collections and it's used as
+the root point accessing any oVirt entity, only by using 
 class-path navigation.
 
 | Each collection return a list of CollectionEntity() classes
 | Each CollectionEntity() class include two fields
 
- - CollectionEntity.entity that hold the Entity type, e.g.: ovirtsdk4.types.Vm
+- **CollectionEntity.entity** that hold the Entity type, e.g.: ovirtsdk4.types.Vm
+  Ovirtsdk4 holds the Entity property here.
 
- - CollectionEntity.service that hold the Entity service, e.g.: ovirtsdk4.system_service().vms_service().vm_service()
+- **CollectionEntity.service** that hold the Entity service, 
+  e.g.: ovirtsdk4.system_service().vms_service().vm_service()  
+  Ovirtsdk4 holds the Entiry actions and links here.
+  To retreive a link you can use the **CollectionEntity.follow_link()** method
+  **Note:** The goal of the project is to reduce as many calls as possible to 
+  the follow_link() nethod, it is recommended to intergrate it inside the 
+  CollectionEntity object.
+  e.g.:
 
-| Any function that starts with the word 'get*()' or list() is retrieving data from the remote oVirt Engine
+ .. code-block:: python
+
+	class VmEntity(CollectionEntity):
+	    def get_nics(self):
+		return self.follow_link(link=self.service.nics)
+  
+| - Any function that starts with the word **'get*()'** or **list()**
+|   is retrieving data from the remote oVirt Engine.
 
 
 **OvirtSdk4 vs. OvirtLib examples**
@@ -86,7 +101,7 @@ class-path navigation.
 | vm.entity
 | equivalent to:
 | vm = ovirtsdk4.system_service().vms_service().list()[0]
- 
+
 | vm.service
 | equivalent to:
 | vm_service = ovirtsdk4.system_service().vms_service().vm_service(id=vm.id).get()
@@ -95,7 +110,7 @@ class-path navigation.
 **Examples**
 ------------------
 
- *Initialaize the class*:
+ *Initialize the class*:
 
  .. code-block:: python
   
@@ -123,4 +138,12 @@ class-path navigation.
 
   engine.hosts.get_names()
 
- 
+
+
+**Contribute**
+------------------
+git clone https://github.com/roniezr/ovirtlib4.git
+
+It is recommended to read ovirtsdk4 documentation before starting to contribute to this project
+https://access.redhat.com/documentation/en-us/red_hat_virtualization/4.3/pdf/python_sdk_guide/Red_Hat_Virtualization-4.3-Python_SDK_Guide-en-US.pdf
+
