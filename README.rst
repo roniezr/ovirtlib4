@@ -75,22 +75,14 @@
 
   - **CollectionEntity.service** hold the Entity service, that holds the Entity 'actions' and 'links'.
 
+  |
   | **follow_link()**
-
+  | ------------------
   | To retrieve an Entity link you can use the **CollectionEntity.follow_link()** method.
-  | **Note:** It is recommended to integrate it inside the CollectionEntity object so it can be called through class-path navigation
+  | **Note:** It is recommended to integrate it inside the CollectionEntity object so it can be called through class-path navigation,
+  | e.g.: *engine.vms.list()[0].get_disk_attachments()*
 
-   As followed e.g.:
-
-   .. code-block:: python
-
-      class VmEntity(CollectionEntity):
-          def get_nics(self):
-          return self.follow_link(link=self.service.nics)
-
-      engine.vms.list()[0].get_nics()
-
-   The above follow_link() command will return the "CollectionEntiry.entity" field only. To retrieve the Entity service, it requires to pass the CollectionClass object as well. see following example:
+   As followed e.g.: vms.py
 
    .. code-block:: python
 
@@ -105,6 +97,54 @@
                 collection_service=disks.Disks(self.connection),
                 link=self.service.disk_attachments
             )
+
+   To retrieve the Entity service, it requires to pass the *CollectionClass* object as well.
+   see **disks.Disks** above as an example
+
+  |
+  | **Sub collections**
+  | -----------------------
+  | See example below, how to define new sub-collection.
+  | Once it added user can use it as follows:
+  | *engine.vms.list()[0].nics.list()*
+
+   .. code-block:: python
+
+    class VmEntity(CollectionEntity):
+        """
+        Put VM custom functions here
+        """
+        @property
+        def nics(self):
+            # Initialize the sub-collection with its parent service
+            return VmNics(connection=self.service)
+
+    class VmNics(CollectionService):
+        """
+        Gives access to all VM NICs
+        """
+        def service(self):
+            """ Overwrite abstract parent method """
+            return self.connection.nics_service()  # Define the sub-collection service
+
+        def _entity_service(self, id):
+            """ Overwrite abstract parent method """
+            return self.service().nic_service(id=id) # Define the sub-collection sub service
+
+        def get_entity_type(self):
+            """ Overwrite abstract parent method """
+            return types.Nic
+
+        def _get_collection_entity(self):
+            """ Overwrite abstract parent method """
+            return VmNic(connection=self.connection)  # Define the CollectioEntity for the
+
+    class VmNic(CollectionEntity):   # Create the CollectioEntity
+        """
+        Put VmNic custom functions here
+        """
+        def __init__(self, *args, **kwargs):
+            CollectionEntity. __init__(self, *args, **kwargs)
 
 - Functions starts with **'get*()'** or **list()** are retrieving data from the remote oVirt Engine.
 
