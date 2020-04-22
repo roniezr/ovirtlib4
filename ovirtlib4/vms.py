@@ -62,6 +62,35 @@ class VmEntity(CollectionEntity):
             link=self.service.disk_attachments
         )
 
-    def get_nics(self):
-        """ Return list of VM vNICs: [CollectionEntity] """
-        return self.follow_link(link=self.service.nics)
+    @property
+    def nics(self):
+        return VmNics(connection=self.service)
+
+
+class VmNics(CollectionService):
+    """
+    Gives access to all VM NICs
+    """
+    def service(self):
+        """ Overwrite abstract parent method """
+        return self.connection.nics_service()
+
+    def _entity_service(self, id):
+        """ Overwrite abstract parent method """
+        return self.service().nic_service(id=id)
+
+    def get_entity_type(self):
+        """ Overwrite abstract parent method """
+        return types.Nic
+
+    def _get_collection_entity(self):
+        """ Overwrite abstract parent method """
+        return VmNic(connection=self.connection)
+
+
+class VmNic(CollectionEntity):
+    """
+    Put VmNic custom functions here
+    """
+    def __init__(self, *args, **kwargs):
+        CollectionEntity. __init__(self, *args, **kwargs)
