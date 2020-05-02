@@ -2,7 +2,7 @@
 
 from .system_service import CollectionService, CollectionEntity
 import ovirtsdk4.types as types
-from . import defaults, disks
+from . import defaults, disks, hosts
 
 
 class Vms(CollectionService):
@@ -38,14 +38,14 @@ class Vms(CollectionService):
 
     def get_hosted_engine_host(self):
         """
-        Return the host Entity of the HostedEngine VM, or "" if not found
+        Return the host Entity of the HostedEngine VM, or None if not found
         """
-        vm = self.get_he_vm()
+        vm = self.get_hosted_engine_vm()
         if vm:
             host_id = vm.entity.host.id
             if host_id:
-                return self.hosts.get_by_id(id=host_id)
-        return ""
+                return hosts.Hosts(self.connection).get_by_id(id=host_id)
+        return None
 
 
 class VmEntity(CollectionEntity):

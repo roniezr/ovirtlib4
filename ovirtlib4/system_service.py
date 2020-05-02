@@ -48,7 +48,7 @@ class CollectionService(RootService):
         Return an entity Type of the the collection
         The return type is a class from: ovirtsdk4.types
         """
-        return self._entity_service(id=id)
+        return self._entity_service(id=id).get()
 
     def _get_collection_entity(self):
         """
