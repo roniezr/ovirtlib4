@@ -59,12 +59,16 @@ class VmEntity(CollectionEntity):
         """ Return list of all VM disks: [CollectionEntity] """
         return self.follow_link(
             collection_service=disks.Disks(self.connection),
-            link=self.service.disk_attachments
+            link=self.entity.disk_attachments
         )
 
     @property
     def nics(self):
         return VmNics(connection=self.service)
+
+    @property
+    def disks(self):
+        return VmDisks(connection=self.service)
 
 
 class VmNics(CollectionService):
@@ -91,6 +95,35 @@ class VmNics(CollectionService):
 class VmNic(CollectionEntity):
     """
     Put VmNic custom functions here
+    """
+    def __init__(self, *args, **kwargs):
+        CollectionEntity. __init__(self, *args, **kwargs)
+
+
+class VmDisks(CollectionService):
+    """
+    Gives access to all VM attached disks
+    """
+    def service(self):
+        """ Overwrite abstract parent method """
+        return self.connection.disk_attachments_service()
+
+    def _entity_service(self, id):
+        """ Overwrite abstract parent method """
+        return self.service().attachment_service(id=id)
+
+    def get_entity_type(self):
+        """ Overwrite abstract parent method """
+        return types.DiskAttachment
+
+    def _get_collection_entity(self):
+        """ Overwrite abstract parent method """
+        return VmDisk(connection=self.connection)
+
+
+class VmDisk(CollectionEntity):
+    """
+    Put VmDisk custom functions here
     """
     def __init__(self, *args, **kwargs):
         CollectionEntity. __init__(self, *args, **kwargs)
