@@ -125,7 +125,10 @@ class CollectionEntity(RootService):
             collection_entities.append(
                 CollectionEntity(
                     entity=entity,
-                    service=collection_service.get_by_id(id=entity.id) if collection_service else collection_service
+                    service=(
+                        collection_service._entity_service(id=entity.id)
+                        if collection_service else collection_service
+                    )
                 )
             )
         return collection_entities
