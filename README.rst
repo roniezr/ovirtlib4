@@ -71,35 +71,9 @@
   | Each collection return a list of **CollectionEntity()** classes
   | Each CollectionEntity() class include two fields
 
-  - **CollectionEntity.entity** hold the Entity type, (e.g.: ovirtsdk4.types.Vm) include the Entity properties.
+  - **CollectionEntity.entity** hold the Entity type, (e.g.: ovirtsdk4.types.Vm) include the Entity properties and 'links'.
 
-  - **CollectionEntity.service** hold the Entity service, that holds the Entity 'actions' and 'links'.
-
-  |
-  | **follow_link()**
-  | ------------------
-  | To retrieve an Entity link you can use the **CollectionEntity.follow_link()** method.
-  | **Note:** It is recommended to integrate it inside the CollectionEntity object so it can be called through class-path navigation,
-  | e.g.: *engine.vms.list()[0].get_disk_attachments()*
-
-   As followed e.g.: vms.py
-
-   .. code-block:: python
-
-     from . import disks
-
-     class VmEntity(CollectionEntity):
-
-        def get_disk_attachments(self):
-            """ Return list of all VM disks: [CollectionEntity] """
-            return self.follow_link(
-                # We want to retrieve VM disk so a disk Collection should be pass
-                collection_service=disks.Disks(self.connection),
-                link=self.service.disk_attachments
-            )
-
-   To retrieve the Entity service, it requires to pass the *CollectionClass* object as well.
-   see **disks.Disks** above as an example
+  - **CollectionEntity.service** hold the Entity service, that holds the Entity 'actions'.
 
   |
   | **Sub collections**
@@ -117,6 +91,7 @@
         @property
         def nics(self):
             # Initialize the sub-collection with its parent service
+            # Integrate VmNics inside VmEntity, so it can be accessed by class-path navigation
             return VmNics(connection=self.service)
 
     class VmNics(CollectionService):
@@ -146,6 +121,14 @@
         def __init__(self, *args, **kwargs):
             CollectionEntity. __init__(self, *args, **kwargs)
 
+  |
+  | **follow_link()**
+  | ------------------
+  | To retrieve an Entity link you can use the **CollectionEntity.follow_link()** method.
+  | **Note:** It is recommended to integrate it inside the CollectionEntity object so it can be called through class-path navigation,
+  | To retrieve the Entity service, it requires to pass the related *CollectionService* object as well.
+  | You will not need to use follow_link() if a sub-collection was implemented as the above example.
+
 - Functions starts with **'get*()'** or **list()** are retrieving data from the remote oVirt Engine.
 
 ***************************
@@ -167,21 +150,32 @@
 list() and get()
 *****************
  | *list()* and *get()* are fully integrated with OvirtSdk4
- | so you can use vms.list(search="name=VM_name") to retrieve a special VM
+ | The list methods of some services support additional parameters.
+ | For more information please refer to the OvirtSdk4 documentation
+ |
+ | For example you can use vms.list(search="name=VM_name") to retrieve a special VM
+ | Or use the 'max' parameter to limit the retrieving events
  |
  | *e.g.: the following will return all VM except the HostedEngine VM*:
 
  .. code-block:: python
 
-  vms.list(search="name!=HostedEngine")
+  engine.vms.list(search="name!=HostedEngine")
+
+ | *e.g.: the following will return 10 events*:
+
+ .. code-block:: python
+
+  engine.events.list(max=10)
+
 
 CollectionEntiry
 ****************
   .. code-block:: python
 
-   vm = ovirtlib.vms.list()[0]      # List() return CollectionEntiry() class
-   vm.entity                        # entity, hold the Entity fields
-   vm.service                       # service, hold the Entity actions and links
+   vm = ovirtlib.vms.list()[0] # list() return list of CollectionEntiry() classes
+   vm.entity                   # entity, hold the Entity fields and links
+   vm.service                  # service, hold the Entity actions
 
   At the above commands **vm.entity** is equivalent to:
 
@@ -221,7 +215,7 @@ CollectionEntiry
 
   hosts = engine.hosts.list()
 
- You can use the get_names() CollectionService method to get a list of all entities:
+ You can use the get_names() CollectionService method to retrieve the names of all entities at the collection:
 
  .. code-block:: python
 
