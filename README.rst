@@ -187,7 +187,7 @@ CollectionEntiry
 
   .. code-block:: python
 
-   vm_service = ovirtsdk4.system_service().vms_service().vm_service(id=vm.id).get()
+   vm_service = ovirtsdk4.system_service().vms_service().vm_service(id=vm.id)
 
 
 **Examples**
