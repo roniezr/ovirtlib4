@@ -16,7 +16,7 @@ class Networks(CollectionService):
         """ Overwrite abstract parent method """
         return self.service().network_service(id=id)
 
-    def get_entity_type(self):
+    def entity_type(self):
         """ Overwrite abstract parent method """
         return types.Network
 

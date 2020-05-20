@@ -33,7 +33,7 @@ class CollectionService(RootService):
         """
         return NotImplementedError
 
-    def get_entity_type(self):
+    def entity_type(self):
         """
         Abstract method, return an individual entity type of the collection
         The return type is a class from: ovirtsdk4.types
@@ -43,7 +43,7 @@ class CollectionService(RootService):
         """
         return NotImplementedError
 
-    def get_by_id(self, id):
+    def get_entity_by_id(self, id):
         """
         Return an entity Type of the the collection
         The return type is a class from: ovirtsdk4.types
@@ -103,8 +103,25 @@ class CollectionEntity(RootService):
     """
     def __init__(self, entity=None, service=None, *args, **kwargs):
         RootService.__init__(self, *args, **kwargs)
-        self.entity = entity
-        self.service = service
+        self._entity = entity
+        self._service = service
+
+    @property
+    def entity(self):
+        self._entity = self.service.get()
+        return self._entity
+
+    @entity.setter
+    def entity(self, entity):
+        self._entity = entity
+
+    @property
+    def service(self):
+        return self._service
+
+    @service.setter
+    def service(self, service):
+        self._service = service
 
     def follow_link(self, link, collection_service=None):
         """

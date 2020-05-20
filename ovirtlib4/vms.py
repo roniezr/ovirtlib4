@@ -17,7 +17,7 @@ class Vms(CollectionService):
         """ Overwrite abstract parent method """
         return self.service().vm_service(id=id)
 
-    def get_entity_type(self):
+    def entity_type(self):
         """ Overwrite abstract parent method """
         return types.Vm
 
@@ -44,7 +44,7 @@ class Vms(CollectionService):
         if vm:
             host_id = vm.entity.host.id
             if host_id:
-                return hosts.Hosts(self.connection).get_by_id(id=host_id)
+                return hosts.Hosts(self.connection).get_entity_by_id(id=host_id)
         return None
 
 
@@ -83,7 +83,7 @@ class VmNics(CollectionService):
         """ Overwrite abstract parent method """
         return self.service().nic_service(id=id)
 
-    def get_entity_type(self):
+    def entity_type(self):
         """ Overwrite abstract parent method """
         return types.Nic
 
@@ -112,7 +112,7 @@ class VmDisks(CollectionService):
         """ Overwrite abstract parent method """
         return self.service().attachment_service(id=id)
 
-    def get_entity_type(self):
+    def entity_type(self):
         """ Overwrite abstract parent method """
         return types.DiskAttachment
 
