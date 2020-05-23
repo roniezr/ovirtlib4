@@ -106,9 +106,12 @@ class CollectionEntity(RootService):
         self._entity = entity
         self._service = service
 
+    def get(self):
+        self._entity = self.service.get()
+        return self
+
     @property
     def entity(self):
-        self._entity = self.service.get()
         return self._entity
 
     @entity.setter
