@@ -20,6 +20,7 @@ class CollectionService(RootService):
     """
     Abstract class, represent an oVirt collection
     """
+    @property
     def service(self):
         """ Return the main collection service e.g.: vms_service(), hosts_service() """
         return NotImplementedError
@@ -45,10 +46,13 @@ class CollectionService(RootService):
 
     def get_entity_by_id(self, id):
         """
-        Return an entity Type of the the collection
-        The return type is a class from: ovirtsdk4.types
+        Return a CollectionEntity class based on given ID
         """
-        return self._entity_service(id=id).get()
+        collection_entity = self._get_collection_entity()
+        collection_entity.entity = self._entity_service(id=id).get()
+        collection_entity.service = self._entity_service(id=id)
+
+        return collection_entity
 
     def _get_collection_entity(self):
         """
@@ -69,12 +73,8 @@ class CollectionService(RootService):
         All the main list() API function abilities are kept and supported
         """
         entities = []
-
-        for entity in self.service().list(*args, **kwargs):
-            collection_entity = self._get_collection_entity()
-            collection_entity.entity = entity
-            collection_entity.service = self._entity_service(id=entity.id)
-            entities.append(collection_entity)
+        for entity in self.service.list(*args, **kwargs):
+            entities.append(self.get_entity_by_id(id=entity.id))
         return entities
 
     def get_names(self, *args, **kwargs):

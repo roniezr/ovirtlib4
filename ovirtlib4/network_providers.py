@@ -8,13 +8,14 @@ class NetworkProvisers(CollectionService):
     """
     Gives access to all oVirt Network Providers
     """
+    @property
     def service(self):
         """ Overwrite abstract parent method """
         return self.connection.system_service().openstack_network_providers_service()
 
     def _entity_service(self, id):
         """ Overwrite abstract parent method """
-        return self.service().provider_service(id=id)
+        return self.service.provider_service(id=id)
 
     def entity_type(self):
         """ Overwrite abstract parent method """

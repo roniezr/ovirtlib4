@@ -9,13 +9,14 @@ class Vms(CollectionService):
     """
     Gives access to all Ovirt VMs
     """
+    @property
     def service(self):
         """ Overwrite abstract parent method """
         return self.connection.system_service().vms_service()
 
     def _entity_service(self, id):
         """ Overwrite abstract parent method """
-        return self.service().vm_service(id=id)
+        return self.service.vm_service(id=id)
 
     def entity_type(self):
         """ Overwrite abstract parent method """

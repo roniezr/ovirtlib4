@@ -8,13 +8,14 @@ class Clusters(CollectionService):
     """
     Gives access to all Ovirt Clusters
     """
+    @property
     def service(self):
         """ Overwrite abstract parent method """
         return self.connection.system_service().clusters_service()
 
     def _entity_service(self, id):
         """ Overwrite abstract parent method """
-        return self.service().cluster_service(id=id)
+        return self.service.cluster_service(id=id)
 
     def entity_type(self):
         """ Overwrite abstract parent method """

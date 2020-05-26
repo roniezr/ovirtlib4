@@ -8,13 +8,14 @@ class VnicProfiles(CollectionService):
     """
     Gives access to all Ovirt VnicProfiles
     """
+    @property
     def service(self):
         """ Overwrite abstract parent method """
         return self.connection.system_service().vnic_profiles_service()
 
     def _entity_service(self, id):
         """ Overwrite abstract parent method """
-        return self.service().profile_service(id=id)
+        return self.service.profile_service(id=id)
 
     def entity_type(self):
         """ Overwrite abstract parent method """

@@ -8,13 +8,14 @@ class Domains(CollectionService):
     """
     Gives access to all Ovirt Domains
     """
+    @property
     def service(self):
         """ Overwrite abstract parent method """
         return self.connection.system_service().storage_domains_service()
 
     def _entity_service(self, id):
         """ Overwrite abstract parent method """
-        return self.service().storage_domain_service(id=id)
+        return self.service.storage_domain_service(id=id)
 
     def entity_type(self):
         """ Overwrite abstract parent method """

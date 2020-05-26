@@ -8,13 +8,14 @@ class DataCenters(CollectionService):
     """
     Gives access to all Ovirt Data Centers
     """
+    @property
     def service(self):
         """ Overwrite abstract parent method """
         return self.connection.system_service().data_centers_service()
 
     def _entity_service(self, id):
         """ Overwrite abstract parent method """
-        return self.service().data_center_service(id=id)
+        return self.service.data_center_service(id=id)
 
     def entity_type(self):
         """ Overwrite abstract parent method """
