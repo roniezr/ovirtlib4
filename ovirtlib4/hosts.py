@@ -38,3 +38,37 @@ class HostEntity(CollectionEntity):
     """
     def __init__(self, *args, **kwargs):
         CollectionEntity. __init__(self, *args, **kwargs)
+
+    @property
+    def nics(self):
+        """Return HostNics class"""
+        return HostNics(connection=self.service)
+
+
+class HostNics(CollectionService):
+    """
+    Gives access to all Host NICs
+    """
+    def service(self):
+        """ Overwrite abstract parent method """
+        return self.connection.nics_service()
+
+    def _entity_service(self, id):
+        """ Overwrite abstract parent method """
+        return self.service().nic_service(id=id)
+
+    def entity_type(self):
+        """ Overwrite abstract parent method """
+        return types.HostNic
+
+    def _get_collection_entity(self):
+        """ Overwrite abstract parent method """
+        return HostNic(connection=self.connection)
+
+
+class HostNic(CollectionEntity):
+    """
+    Put HostNic custom functions here
+    """
+    def __init__(self, *args, **kwargs):
+        CollectionEntity. __init__(self, *args, **kwargs)
