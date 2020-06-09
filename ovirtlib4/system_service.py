@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import types
+import collections
+
 
 class RootService(object):
     """
@@ -73,7 +76,11 @@ class CollectionService(RootService):
         All the main list() API function abilities are kept and supported
         """
         entities = []
-        for entity in self.service.list(*args, **kwargs):
+        if isinstance(self.service, types.MethodType):
+            return_entities = self.service().list(*args, **kwargs)
+        else:
+            return_entities = self.service.list(*args, **kwargs)
+        for entity in return_entities:
             entities.append(self.get_entity_by_id(id=entity.id))
         return entities
 
@@ -139,6 +146,8 @@ class CollectionEntity(RootService):
                 if collection_service is ot given, then CollectionEntity.service will be None
         """
         entities = self.connection.follow_link(obj=link)
+        if not isinstance(entities, collections.Iterable):
+            entities = [entities]
 
         collection_entities = []
         for entity in entities:
