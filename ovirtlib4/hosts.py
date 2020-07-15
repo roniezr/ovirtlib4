@@ -102,7 +102,7 @@ class HostStatistics(CollectionService):
 
 class HostStatistic(CollectionEntity):
     """
-    Put HostNic custom functions here
+    Put HostStatistic custom functions here
     """
     def __init__(self, *args, **kwargs):
         CollectionEntity. __init__(self, *args, **kwargs)
