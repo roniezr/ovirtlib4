@@ -44,6 +44,11 @@ class HostEntity(CollectionEntity):
         """Return HostNics class"""
         return HostNics(connection=self.service)
 
+    @property
+    def statistics(self):
+        """Return HostStatistics class"""
+        return HostStatistics(connection=self.service)
+
 
 class HostNics(CollectionService):
     """
@@ -67,6 +72,35 @@ class HostNics(CollectionService):
 
 
 class HostNic(CollectionEntity):
+    """
+    Put HostNic custom functions here
+    """
+    def __init__(self, *args, **kwargs):
+        CollectionEntity. __init__(self, *args, **kwargs)
+
+
+class HostStatistics(CollectionService):
+    """
+    Gives access to all Host NICs
+    """
+    def service(self):
+        """ Overwrite abstract parent method """
+        return self.connection.statistics_service()
+
+    def _entity_service(self, id):
+        """ Overwrite abstract parent method """
+        return self.service().statistic_service(id=id)
+
+    def entity_type(self):
+        """ Overwrite abstract parent method """
+        return types.Statistic
+
+    def _get_collection_entity(self):
+        """ Overwrite abstract parent method """
+        return HostStatistic(connection=self.connection)
+
+
+class HostStatistic(CollectionEntity):
     """
     Put HostNic custom functions here
     """
