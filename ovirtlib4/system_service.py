@@ -70,70 +70,44 @@ class CollectionService(RootService):
         """
         return CollectionEntity(connection=self.connection)
 
-    def _get_wait_for_type(self, wait_for):
+    def _process_sample(self, wait_for, wait_method, sample):
         """
-        Detect the given 'wait_for' type
-
-        Args:
-            wait_for (bool/callable/str/None): object from type of string, function name or boolean
-
-        Returns:
-            bool/callable/str: If the type of given 'wait_for' if detected, None otherwise
-        """
-        try:
-            if type(wait_for) == bool:
-                return bool
-        except Exception:
-            pass
-
-        try:
-            if callable(wait_for):
-                return callable
-        except Exception:
-            pass
-
-        try:
-            if type(wait_for) == str:
-                return str
-        except Exception:
-            pass
-
-        return None
-
-    def _process_sample(self, wait_for, wait_for_method, sample):
-        """
-        Handle a result sample according to the given 'wait_for' and 'wait_for_method'
+        Handle a result sample according to the given 'wait_for' and 'wait_method'
 
         Args:
             wait_for (object): see run_sampler() docstring
-            wait_for_method (str): see run_sampler() docstring
+            wait_method (str): see run_sampler() docstring
             sample (list): List of SDK entities, returned by get()
 
         Returns:
-            list: the given sample if it match, otherwise an empty list
+            list: If 'str' or 'bool' return the given sample if it match,
+                if 'str' return the filtered list if it match,
+                if no match return an empty list
         """
-        wait_for_type = self._get_wait_for_type(wait_for=wait_for)
-
-        if wait_for_type == bool:
+        if type(wait_for) == bool:
             if (sample is not []) == wait_for:
                 return sample
 
-        if wait_for_type == callable:
+        if callable(wait_for):
             results = eval("wait_for(sample)")
             if results:
                 return sample
 
-        if wait_for_type == str:
+        if type(wait_for) == str:
             results = []
+            true_objects = []
             for obj in sample:
-                results.append(eval(f"obj.{wait_for}"))
+                result = eval(f"obj.{wait_for}")
+                results.append(result)
+                if result:
+                    true_objects.append(obj)
 
-            if eval(f"{wait_for_method}(results)"):
-                return sample
+            if eval(f"{wait_method}(results)"):
+                return true_objects
 
         return []
 
-    def run_sampler(self, wait_for, wait_method="all", timeout=5, sleep=1, *args, **kwargs):
+    def run_sampler(self, wait_for, wait_method="any", timeout=5, sleep=1, *args, **kwargs):
         """
         Sample the list() method
 
@@ -143,9 +117,9 @@ class CollectionService(RootService):
                     True - wait until list() will return a non-empty list
                     False - wait until list() will return an empty list
                 If 'str': 'wait_for' will be examine for each field at the list,
-                    wait until any or all fields are True (depend on 'wait_for_method')
+                    wait until any or all fields are True (depend on 'wait_method')
                 If 'function': Wait until given function return True
-            wait_for_method (str): Can be "any" or "all" available only if given 'wait_for' value is string
+            wait_method (str): Can be "any" or "all" available only if given 'wait_for' value is string
                 "all": all object at the list should match before exit the wait state
                 "any": exit the wait state for first match
             timeout (int): Timeout to wait for success in seconds
@@ -164,12 +138,8 @@ class CollectionService(RootService):
         )
         try:
             for sample in sampler:
-                if sample and self._process_sample(
-                    wait_for=wait_for,
-                    wait_for_method=wait_method,
-                    sample=sample
-                ):
-                    return sample
+                if sample:
+                    return self._process_sample(wait_for=wait_for, wait_method=wait_method, sample=sample)
 
         except APITimeout:
             logger.error(f"Timeout expired while waiting for True value of wait_for={wait_for}")
@@ -180,7 +150,10 @@ class CollectionService(RootService):
         Call to list()
 
         Args:
-            wait_for (object): see run_sampler() docstring
+            wait_for (object): See run_sampler() docstring
+
+        Returns:
+            list: List of CollectionEntity objects
         """
         if wait_for is not None:
             return self.run_sampler(wait_for=wait_for, *args, **kwargs)
