@@ -85,7 +85,7 @@ class CollectionService(RootService):
                 if no match return an empty list
         """
         if type(wait_for) == bool:
-            if (sample is not []) == wait_for:
+            if (not sample) == (not wait_for):
                 return sample
 
         if callable(wait_for):
