@@ -139,7 +139,9 @@ class CollectionService(RootService):
         try:
             for sample in sampler:
                 if sample:
-                    return self._process_sample(wait_for=wait_for, wait_method=wait_method, sample=sample)
+                    result = self._process_sample(wait_for=wait_for, wait_method=wait_method, sample=sample)
+                    if result:
+                        return result
 
         except APITimeout:
             logger.error(f"Timeout expired while waiting for True value of wait_for={wait_for}")
