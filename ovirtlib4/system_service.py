@@ -107,7 +107,7 @@ class CollectionService(RootService):
 
         return []
 
-    def run_sampler(self, wait_for, wait_method="any", timeout=5, sleep=1, *args, **kwargs):
+    def run_sampler(self, wait_for, wait_method="any", wait_timeout=5, wait_interval=1, *args, **kwargs):
         """
         Sample the list() method
 
@@ -122,16 +122,16 @@ class CollectionService(RootService):
             wait_method (str): Can be "any" or "all" available only if given 'wait_for' value is string
                 "all": all object at the list should match before exit the wait state
                 "any": exit the wait state for first match
-            timeout (int): Timeout to wait for success in seconds
-            sleep (sleep): Sleep interval between the samplers in seconds
+            wait_timeout (int): Timeout to wait for success in seconds
+            wait_interval (int): Sleep interval between the samplers in seconds
             *args, **kwargs : Parameters to pass to the list() method
 
         Returns:
             list: List output is succeeded, None if timeout expired
         """
         sampler = TimeoutingSampler(
-            timeout=timeout,
-            sleep=sleep,
+            timeout=wait_timeout,
+            interval=wait_interval,
             func=self.list,
             *args,
             **kwargs

@@ -90,14 +90,14 @@ class TimeoutingSampler(object):
     Author: jhenner
     """
 
-    def __init__(self, timeout, sleep, func, *func_args, **func_kwargs):
+    def __init__(self, timeout, interval, func, *func_args, **func_kwargs):
         """
         See the doc for TimeoutingSampler.
         """
 
         self.timeout = timeout
         """ Timeout in seconds. """
-        self.sleep = sleep
+        self.interval = interval
         """ Sleep interval seconds. """
 
         self.func = func
@@ -128,7 +128,7 @@ class TimeoutingSampler(object):
             if self.timeout < (time.time() - self.start_time):
                 raise self.timeout_exc_cls(*self.timeout_exc_args,
                                            **self.timeout_exc_kwargs)
-            time.sleep(self.sleep)
+            time.sleep(self.interval)
 
     def waitForFuncStatus(self, result):
         """
@@ -139,7 +139,7 @@ class TimeoutingSampler(object):
             * *result* - Expected result from func (True or False), for
                          positive/negative tests
         Example (calling updateNic function)::
-        sample = TimeoutingSampler(timeout=60, sleep=1,
+        sample = TimeoutingSampler(timeout=60, interval=1,
                                    func=updateNic, positive=True,
                                    vm=config.VM_NAME[0], nic=nic_name,
                                    plugged='true')
