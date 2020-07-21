@@ -85,7 +85,7 @@ class CollectionService(RootService):
                 if no match return an empty list
         """
         if type(wait_for) == bool:
-            if (not sample) == (not wait_for):
+            if bool(sample) == wait_for:
                 return sample
 
         if callable(wait_for):
@@ -144,7 +144,10 @@ class CollectionService(RootService):
                         return result
 
         except APITimeout:
-            logger.error(f"Timeout expired while waiting for True value of wait_for={wait_for}")
+            logger.error(
+                f"Timeout '{wait_timeout}' expired while waiting for True value "
+                f"of wait_for='{wait_for}' form object '{self.__class__}'"
+            )
             return None
 
     def get(self, wait_for=None, *args, **kwargs):
