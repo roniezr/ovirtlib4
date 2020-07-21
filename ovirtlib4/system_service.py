@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import types
 import collections
+import logging
+import types
+
+from .utils.sampler import APITimeout
+from .utils.sampler import TimeoutingSampler
+
+logger = logging.getLogger(__name__)
 
 
 class RootService(object):
@@ -64,8 +70,99 @@ class CollectionService(RootService):
         """
         return CollectionEntity(connection=self.connection)
 
-    def get(self, *args, **kwargs):
-        """ Same as list() """
+    def _process_sample(self, wait_for, wait_method, sample):
+        """
+        Handle a result sample according to the given 'wait_for' and 'wait_method'
+
+        Args:
+            wait_for (object): see run_sampler() docstring
+            wait_method (str): see run_sampler() docstring
+            sample (list): List of SDK entities, returned by get()
+
+        Returns:
+            list: If 'str' or 'bool' return the given sample if it match,
+                if 'str' return the filtered list if it match,
+                if no match return an empty list
+        """
+        if type(wait_for) == bool:
+            if bool(sample) == wait_for:
+                return sample
+
+        if callable(wait_for):
+            results = eval("wait_for(sample)")
+            if results:
+                return sample
+
+        if type(wait_for) == str:
+            results = []
+            true_objects = []
+            for obj in sample:
+                result = eval(f"obj.{wait_for}")
+                results.append(result)
+                if result:
+                    true_objects.append(obj)
+
+            if eval(f"{wait_method}(results)"):
+                return true_objects
+
+        return []
+
+    def run_sampler(self, wait_for, wait_method="any", wait_timeout=5, wait_interval=1, *args, **kwargs):
+        """
+        Sample the list() method
+
+        Args:
+            wait_for (object): The algorithm to detect a successful method
+                If 'bool': examine the list() returned value,
+                    True - wait until list() will return a non-empty list
+                    False - wait until list() will return an empty list
+                If 'str': 'wait_for' will be examine for each field at the list,
+                    wait until any or all fields are True (depend on 'wait_method')
+                If 'function': Wait until given function return True
+            wait_method (str): Can be "any" or "all" available only if given 'wait_for' value is string
+                "all": all object at the list should match before exit the wait state
+                "any": exit the wait state for first match
+            wait_timeout (int): Timeout to wait for success in seconds
+            wait_interval (int): Sleep interval between the samplers in seconds
+            *args, **kwargs : Parameters to pass to the list() method
+
+        Returns:
+            list: List output is succeeded, None if timeout expired
+        """
+        sampler = TimeoutingSampler(
+            timeout=wait_timeout,
+            interval=wait_interval,
+            func=self.list,
+            *args,
+            **kwargs
+        )
+        try:
+            for sample in sampler:
+                if sample:
+                    result = self._process_sample(wait_for=wait_for, wait_method=wait_method, sample=sample)
+                    if result:
+                        return result
+
+        except APITimeout:
+            logger.error(
+                f"Timeout '{wait_timeout}' expired while waiting for True value "
+                f"of wait_for='{wait_for}' form object '{self.__class__}'"
+            )
+            return None
+
+    def get(self, wait_for=None, *args, **kwargs):
+        """
+        Call to list()
+
+        Args:
+            wait_for (object): See run_sampler() docstring
+
+        Returns:
+            list: List of CollectionEntity objects
+        """
+        if wait_for is not None:
+            return self.run_sampler(wait_for=wait_for, *args, **kwargs)
+
         return self.list(*args, **kwargs)
 
     def list(self, *args, **kwargs):
