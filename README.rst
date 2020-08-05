@@ -76,58 +76,122 @@
   - **CollectionEntity.service** hold the Entity service, that holds the Entity 'actions'.
 
   |
-  | **Sub collections**
-  | -----------------------
-  | See example below, how to define new sub-collection.
-  | Once it added user can use it as follows:
-  | *engine.vms.list()[0].nics.list()*
+  | ** **Collection** **
+  | --------------------------------
+  | Each collection must inherit from **CollectionService()**
+  | The new inherit class must define 3 parameters at the __init__() method:
+  | 1. **self.service**: the collection service from the SDK
+  | 2. **self.entity_service**: the entity service usually exists under 'self.service' above
+  | 3. **self.entity.type**: the entity type from the SDK
+  |
+  | The new inherit class must also overwrite the following method
+  | 4. **_get_collection_entity()**:
+  | This metod must return a link to a new clas inherit from **CollectionEntity()** class.
+  | This class represent an individual entity inside the collection
+  | This class is used to store custom functions related to the individual entity
+  |
+  | Optional:
+  | 5. **self.follows**: If it defined, it will retrieve assigning links when calling get()
+  |
+  |
+  | See the example below, how to define VMs collection that will return a list of VmEntitiy()'s
+
+   .. code-block:: python
+
+    class Vms(CollectionService):
+    """
+    Gives access to all Ovirt VMs
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.service = self.connection.system_service().vms_service()  # 1 above
+        self.entity_service = self.service.vm_service                  # 2 above
+        self.entity_type = types.Vm                                    # 3 above
+        self.follows = (                                               # 5 optional
+            "diskattachments.disk,"
+            "katelloerrata,"
+            "permissions,"
+            "tags,"
+            "affinitylabels,"
+            "graphicsconsoles,"
+            "cdroms,"
+            "nics,"
+            "watchdogs,"
+            "snapshots,"
+            "applications,"
+            "hostdevices,"
+            "reporteddevices,"
+            "sessions,"
+            "statistics"
+        )
+
+        def _get_collection_entity(self):                # 4 above
+        """ Overwrite abstract parent method """
+        return VmEntity(connection=self.connection)
+
+    class VmEntity(CollectionEntity):                    # 4 above
+    """
+    Put VM custom functions here
+    """
+    def __init__(self, *args, **kwargs):
+        CollectionEntity. __init__(self, *args, **kwargs)
+
+  |
+  | ** **Sub-Collection** **
+  | --------------------------------
+  | Entity can include other collections, for example, VM can include collections of NICs or Disks, etc...
+  |
+  | At the example below, we define sub-collection for the VmEntitiy()
 
    .. code-block:: python
 
     class VmEntity(CollectionEntity):
-        """
-        Put VM custom functions here
-        """
-        @property
-        def nics(self):
-            # Initialize the sub-collection with its parent service
-            # Integrate VmNics inside VmEntity, so it can be accessed by class-path navigation
-            return VmNics(connection=self.service)
+    """
+    Put VM custom functions here
+    """
+    def __init__(self, *args, **kwargs):
+        CollectionEntity. __init__(self, *args, **kwargs)
+
+    @property
+    def nics(self):
+        return VmNics(connection=self.service)  # self.service is the indevidual VM service
 
     class VmNics(CollectionService):
-        """
-        Gives access to all VM NICs
-        """
-        def service(self):
-            """ Overwrite abstract parent method """
-            return self.connection.nics_service()  # Define the sub-collection service
+    """
+    Gives access to all VM NICs
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        def _entity_service(self, id):
-            """ Overwrite abstract parent method """
-            return self.service().nic_service(id=id) # Define the sub-collection sub service
+        self.service = self.connection.nics_service()   # here self.connection is the VM collection service
+        self.entity_service = self.service.nic_service  # same as collection above
+        self.entity_type = types.Nic                    # same as collection above
+        self.follows = "networkfilterparameters,reporteddevices,statistics,vm" # VM nics links
 
-        def get_entity_type(self):
-            """ Overwrite abstract parent method """
-            return types.Nic
+    def _get_collection_entity(self):
+        """ Overwrite abstract parent method """
+        return VmNic(connection=self.connection)
 
-        def _get_collection_entity(self):
-            """ Overwrite abstract parent method """
-            return VmNic(connection=self.connection)  # Define the CollectioEntity for the
 
-    class VmNic(CollectionEntity):   # Create the CollectioEntity
-        """
-        Put VmNic custom functions here
-        """
-        def __init__(self, *args, **kwargs):
-            CollectionEntity. __init__(self, *args, **kwargs)
+    class VmNic(CollectionEntity):
+    """
+    Put VmNic custom functions here
+    """
+    def __init__(self, *args, **kwargs):
+        CollectionEntity. __init__(self, *args, **kwargs)
 
   |
   | **follow_link()**
   | ------------------
-  | To retrieve an Entity link you can use the **CollectionEntity.follow_link()** method.
-  | **Note:** It is recommended to integrate it inside the CollectionEntity object so it can be called through class-path navigation,
-  | To retrieve the Entity service, it requires to pass the related *CollectionService* object as well.
-  | You will not need to use follow_link() if a sub-collection was implemented as the above example.
+  | There are some option to retrieve entity links
+  | 1. Define the 'self.follows' for a collection, see example above
+  | 2. Through get() e.g.: get(follow="link_name")
+  | 3. Use the ovirtlib.folow_link() method
+  | 4. Use the CollectionEntity.follow_link() method
+  |
+  | 1 to 3 will retrieve the entity links, but it will not include the entity service
+  | Options 4 will include the entity service as well if given
 
 - Functions starts with **'get*()'** or **list()** are retrieving data from the remote oVirt Engine.
 
@@ -147,13 +211,13 @@
 
   ovirtlib.vms.list()
 
-list() and get()
+get()
 *****************
- | *list()* and *get()* are fully integrated with OvirtSdk4
- | The list methods of some services support additional parameters.
+ | *get()* is fully integrated with OvirtSdk4 list() method
+ | The SDK list() methods of some services support additional parameters.
  | For more information please refer to the OvirtSdk4 documentation
  |
- | For example you can use vms.list(search="name=VM_name") to retrieve a special VM
+ | For example you can use vms.get(search="name=VM_name") to retrieve a special VM
  | Or use the 'max' parameter to limit the retrieving events
  |
  | *e.g.: the following will return all VM except the HostedEngine VM*:
@@ -166,14 +230,14 @@ list() and get()
 
  .. code-block:: python
 
-  engine.events.list(max=10)
+  engine.events.get(max=10)
 
 
 CollectionEntiry
 ****************
   .. code-block:: python
 
-   vm = ovirtlib.vms.list()[0] # list() return list of CollectionEntiry() classes
+   vm = ovirtlib.vms.get()[0] # list() return list of CollectionEntiry() classes
    vm.entity                   # entity, hold the Entity fields and links
    vm.service                  # service, hold the Entity actions
 
@@ -204,7 +268,7 @@ CollectionEntiry
 
  .. code-block:: python
 
-  vms = engine.vms.list()
+  vms = engine.vms.get()
   for vm in vms:
     print("Starting VM {name}".format(name=vm.entity.name))
     vm.service.start()
@@ -213,7 +277,8 @@ CollectionEntiry
 
  .. code-block:: python
 
-  hosts = engine.hosts.list()
+  hosts = engine.hosts.get() or
+  hosts = engine.hosts()
 
  You can use the get_names() CollectionService method to retrieve the names of all entities at the collection:
 

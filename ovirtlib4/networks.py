@@ -8,18 +8,13 @@ class Networks(CollectionService):
     """
     Gives access to all oVirt Networks
     """
-    @property
-    def service(self):
-        """ Overwrite abstract parent method """
-        return self.connection.system_service().networks_service()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def _entity_service(self, id):
-        """ Overwrite abstract parent method """
-        return self.service.network_service(id=id)
-
-    def entity_type(self):
-        """ Overwrite abstract parent method """
-        return types.Network
+        self.service = self.connection.system_service().networks_service()
+        self.entity_service = self.service.network_service
+        self.entity_type = types.Network
+        self.follows = "permissions,vnicprofiles,networklabels,data_center"
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """

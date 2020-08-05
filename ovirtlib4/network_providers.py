@@ -8,18 +8,13 @@ class NetworkProvisers(CollectionService):
     """
     Gives access to all oVirt Network Providers
     """
-    @property
-    def service(self):
-        """ Overwrite abstract parent method """
-        return self.connection.system_service().openstack_network_providers_service()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def _entity_service(self, id):
-        """ Overwrite abstract parent method """
-        return self.service.provider_service(id=id)
-
-    def entity_type(self):
-        """ Overwrite abstract parent method """
-        return types.ExternalNetworkProviderConfiguration
+        self.service = self.connection.system_service().openstack_network_providers_service()
+        self.entity_service = self.service.provider_service
+        self.entity_type = types.ExternalNetworkProviderConfiguration
+        self.follows = "networks,certificates"
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
@@ -28,7 +23,7 @@ class NetworkProvisers(CollectionService):
 
 class NetworkProvider(CollectionEntity):
     """
-    Put VM custom functions here
+    Put NetworkProvider custom functions here
     """
     def __init__(self, *args, **kwargs):
         CollectionEntity. __init__(self, *args, **kwargs)

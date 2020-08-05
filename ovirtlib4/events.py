@@ -8,18 +8,12 @@ class Events(CollectionService):
     """
     Gives access to all Ovirt Events
     """
-    @property
-    def service(self):
-        """ Overwrite abstract parent method """
-        return self.connection.system_service().events_service()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def _entity_service(self, id):
-        """ Overwrite abstract parent method """
-        return self.service.event_service(id=id)
-
-    def entity_type(self):
-        """ Overwrite abstract parent method """
-        return types.Event
+        self.service = self.connection.system_service().events_service()
+        self.entity_service = self.service.event_service
+        self.entity_type = types.Event
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """

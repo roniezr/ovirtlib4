@@ -8,18 +8,13 @@ class Templates(CollectionService):
     """
     Gives access to all Ovirt Templates
     """
-    @property
-    def service(self):
-        """ Overwrite abstract parent method """
-        return self.connection.system_service().templates_service()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def _entity_service(self, id):
-        """ Overwrite abstract parent method """
-        return self.service.template_service(id=id)
-
-    def entity_type(self):
-        """ Overwrite abstract parent method """
-        return types.Template
+        self.service = self.connection.system_service().templates_service()
+        self.entity_service = self.service.template_service
+        self.entity_type = types.Template
+        self.follows = "permissions,tags,diskattachments,graphicsconsoles,cdroms,nics,watchdogs"
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
