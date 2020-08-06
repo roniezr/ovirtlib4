@@ -63,7 +63,7 @@
 
 **Main Concept**
 ----------------
-  It all starts with the OvirtLib() main class
+  It all starts with the **OvirtLib()** main class.
   This class holds the oVirt Collections and it used as
   the root point accessing any oVirt entity, only by using
   class-path navigation.
@@ -81,7 +81,7 @@
   | Each collection must inherit from **CollectionService()**
   | The new inherit class must define 3 parameters at the __init__() method:
   | 1. **self.service**: the collection service from the SDK
-  | 2. **self.entity_service**: the entity service usually exists under 'self.service' above
+  | 2. **self.entity_service**: the entity service usually found under 'self.service' above
   | 3. **self.entity.type**: the entity type from the SDK
   |
   | The new inherit class must also overwrite the following method
@@ -92,8 +92,9 @@
   |
   | Optional:
   | 5. **self.follows**: If it defined, it will retrieve assigning links when calling get()
-  |
-  |
+  | For more information about the 'follow' get() parameter see:
+  | https://www.ovirt.org/develop/release-management/features/infra/link-following.html
+
   | See the example below, how to define VMs collection that will return a list of VmEntitiy()'s
 
    .. code-block:: python
@@ -164,9 +165,9 @@
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.service = self.connection.nics_service()   # here self.connection is the VM collection service
-        self.entity_service = self.service.nic_service  # same as collection above
-        self.entity_type = types.Nic                    # same as collection above
+        self.service = self.connection.nics_service()   # self.connection is the VM collection service
+        self.entity_service = self.service.nic_service  # same as Collection above
+        self.entity_type = types.Nic                    # same as Collection above
         self.follows = "networkfilterparameters,reporteddevices,statistics,vm" # VM nics links
 
     def _get_collection_entity(self):
@@ -182,62 +183,63 @@
         CollectionEntity. __init__(self, *args, **kwargs)
 
   |
-  | **follow_link()**
-  | ------------------
-  | There are some option to retrieve entity links
-  | 1. Define the 'self.follows' for a collection, see example above
-  | 2. Through get() e.g.: get(follow="link_name")
-  | 3. Use the ovirtlib.folow_link() method
-  | 4. Use the CollectionEntity.follow_link() method
+
+follow_link()
+*****************
+  | There are some options to retrieve entity links:
   |
-  | 1 to 3 will retrieve the entity links, but it will not include the entity service
+  | 1. Define the **'self.follows'** for a collection, see example above
+  | 2. Through get() e.g.: **get(follow="link_name")**
+  | 3. Use the **ovirtlib.follow_link()** method
+  | 4. Use the **CollectionEntity.follow_link()** method
+  |
+  | Sections 1..3 will retrieve the entity links, but it will not include the entity service
   | Options 4 will include the entity service as well if given
-
-- Functions starts with **'get*()'** or **list()** are retrieving data from the remote oVirt Engine.
-
-***************************
-**OvirtSdk vs. OvirtLib**
-***************************
- *Retrieving VMs via OvirtSdk4*:
-
- .. code-block:: python
-
-  ovirtsdk4.system_service().vms_service().list()
-
-
- *Is equivalent for the following OvirtLib4 command*:
-
- .. code-block:: python
-
-  ovirtlib.vms.list()
+  | **Note** that you will not need to use *'follow_link()'* if a sub-collections is defined instead
+  |
 
 get()
 *****************
- | *get()* is fully integrated with OvirtSdk4 list() method
+ | **get()** is fully integrated with OvirtSdk4 **list()** method
  | The SDK list() methods of some services support additional parameters.
  | For more information please refer to the OvirtSdk4 documentation
  |
  | For example you can use vms.get(search="name=VM_name") to retrieve a special VM
  | Or use the 'max' parameter to limit the retrieving events
- |
- | *e.g.: the following will return all VM except the HostedEngine VM*:
 
  .. code-block:: python
 
+  *E.g.: the following will return the HostedEngine VM only*:
+
   engine.vms.list(search="name!=HostedEngine")
 
- | *e.g.: the following will return 10 events*:
+
+  *E.g.: the following will return 10 events*:
 
  .. code-block:: python
 
   engine.events.get(max=10)
+
+ | From v1.1.0 'get()' will be executed when calling the collection class e.g.: vms()
+ | So *'ovirtlib.vms.get()'* is eqvivalent to *'ovirtlib.vms()'*
+ | Note that to be updated with the remote engine you must call 'get()'
+ | e.g.:
+ | *'vm.entity.status'* and *'vm().entity.status'* or *'vm.get().entity.status'* are not equivalent,
+ | the first read the status of a local retrieved VM class and the second,
+ | first retrieves the VM data from the remote engine and then display its status
+ |
+ | *E.g.: the following will return all VM except the HostedEngine VM*:
+ |
+ | **Note** that as a convention functions that starts with **'get*()'** or **list()**
+ | are retrieving data from the remote Engine.
+ |
 
 
 CollectionEntiry
 ****************
   .. code-block:: python
 
-   vm = ovirtlib.vms.get()[0] # list() return list of CollectionEntiry() classes
+   vm = ovirtlib.vms.get()[0]  # list() return list of CollectionEntiry() classes
    vm.entity                   # entity, hold the Entity fields and links
    vm.service                  # service, hold the Entity actions
 
@@ -253,6 +255,25 @@ CollectionEntiry
 
    vm_service = ovirtsdk4.system_service().vms_service().vm_service(id=vm.id)
 
+***************************
+**OvirtSdk vs. OvirtLib**
+***************************
+ *E.g: retrieving VM/s via OvirtSdk4, start it, and display its name*:
+
+ .. code-block:: python
+
+  vm = sdk_connection.system_service().vms_service().list()[0]
+  vm_service = sdk_connection.system_service().vms_service().vm_service(id=vm.id)
+  vm_sevice.start()
+  print(vm.name)
+
+ *Is equivalent for the following OvirtLib4 command*:
+
+ .. code-block:: python
+
+  vm = ovirtlib.vms()[0]
+  vm.service.start()
+  print(vm.entity.name)
 
 **Examples**
 ------------------
@@ -293,3 +314,5 @@ CollectionEntiry
   - git clone https://github.com/roniezr/ovirtlib4.git
 
   - It is recommended to read ovirtsdk4 documentation before starting to contribute to this project https://access.redhat.com/documentation/en-us/red_hat_virtualization/4.3/pdf/python_sdk_guide/Red_Hat_Virtualization-4.3-Python_SDK_Guide-en-US.pdf
+
+|
