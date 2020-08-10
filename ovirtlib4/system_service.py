@@ -3,6 +3,7 @@
 import collections
 import logging
 import types
+from collections.abc import Iterable
 
 from .utils.sampler import APITimeout
 from .utils.sampler import TimeoutingSampler
@@ -114,11 +115,13 @@ class RootService(object):
         if type(wait_for) == str:
             results = []
             true_objects = []
+            if not isinstance(sample, Iterable):
+                sample = [sample]
             for obj in sample:
                 result = eval(f"obj.{wait_for}")
                 results.append(result)
                 logger.debug(
-                    f"Wait for True value of: '{wait_for}', for object name: '{obj.entity.name}', got value: {result}"
+                    f"Wait for True value of: '{wait_for}', for object: '{type(obj)}', got value: {result}"
                 )
                 if result:
                     true_objects.append(obj)
@@ -153,6 +156,7 @@ class CollectionService(RootService):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self._service = NotImplementedError
         self._entity_service = NotImplementedError
         self._entity_type = NotImplementedError
@@ -186,7 +190,7 @@ class CollectionService(RootService):
         The type is required to add or modify a collection entity
         user can use ovirtsdk4.types or get the Struct type by calling this method
         """
-        return self.entity_type
+        return self._entity_type
 
     @entity_type.setter
     def entity_type(self, entity_type):
@@ -277,7 +281,8 @@ class CollectionEntity(RootService):
         service (ovirtsdk4.Service): The service of the individual entity of a collection
     """
     def __init__(self, entity=None, service=None, *args, **kwargs):
-        RootService.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
+
         self._entity = entity
         self._service = service
 
@@ -285,6 +290,15 @@ class CollectionEntity(RootService):
         return self.get(*args, **kwargs)
 
     def get(self, *args, **kwargs):
+        """
+        Call to list()
+
+        Returns:
+            list: List of CollectionEntity objects
+        """
+        return super().get(func=self.list, *args, **kwargs)
+
+    def list(self, *args, **kwargs):
         self._entity = super().get(func=self.service.get, *args, **kwargs)
         return self
 

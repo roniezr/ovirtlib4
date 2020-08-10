@@ -10,7 +10,7 @@
 
 **Requirements**
 ----------------
-- Python 2.7, 3.6
+- Python 3.6
 - ovirtsdk4
 
 
@@ -40,16 +40,16 @@
 
 **Introduction**
 ----------------
-  This lib design to simplify the use of OvirtSdk4.
-  The main class is the root for all oVirt components/entities,
-  by navigating the class-path you can **quickly** find and set/get
+  This Lib file is intended to simplify the use of OvirtSdk4.
+  The main class is the root of all the components/entities of oVirt,
+  by navigating the classpath you can **quickly** find and set/get
   any oVirt feature/information.
 
 
 **Why this lib is required**
 -----------------------------
-  The main ovirtsdk4 include basic REST API commands, it still needs
-  to create simple methods to execute complex operations.
+  The main ovirtsdk4 includes basic REST API commands, it still needs
+  create simple methods for performing complex operations.
   So instead of "inventing the wheel" again and again by different developer/teams,
   you can use this library and contribute to the community by extending it
   with your added methods
@@ -58,7 +58,7 @@
 **Project Vision**
 ----------------------
 1. Fully integrated with the parent ovirtsdk4
-2. Quickly and simply use of oVirt REST commands
+2. Quick and easy use of oVirt REST commands
 
 
 **Main Concept**
@@ -71,7 +71,7 @@
   | Each collection return a list of **CollectionEntity()** classes
   | Each CollectionEntity() class include two fields
 
-  - **CollectionEntity.entity** hold the Entity type, (e.g.: ovirtsdk4.types.Vm) include the Entity properties and 'links'.
+  - **CollectionEntity.entity** hold the Entity type, (e.g.: ovirtsdk4.types.Vm) it includes the Entity properties and 'links'.
 
   - **CollectionEntity.service** hold the Entity service, that holds the Entity 'actions'.
 
@@ -86,15 +86,12 @@
   |
   | The new inherit class must also overwrite the following method
   | 4. **_get_collection_entity()**:
-  | This metod must return a link to a new clas inherit from **CollectionEntity()** class.
-  | This class represent an individual entity inside the collection
-  | This class is used to store custom functions related to the individual entity
+  | This method must return a link to a new class inherit from **CollectionEntity()**.
+  | This class represent an individual entity inside the collection,
+  | It used to:
+  | - Store custom functions related to the individual entity.
+  | - Add links to its sub collections
   |
-  | Optional:
-  | 5. **self.follows**: If it defined, it will retrieve assigning links when calling get()
-  | For more information about the 'follow' get() parameter see:
-  | https://www.ovirt.org/develop/release-management/features/infra/link-following.html
-
   | See the example below, how to define VMs collection that will return a list of VmEntitiy()'s
 
    .. code-block:: python
@@ -109,23 +106,6 @@
         self.service = self.connection.system_service().vms_service()  # 1 above
         self.entity_service = self.service.vm_service                  # 2 above
         self.entity_type = types.Vm                                    # 3 above
-        self.follows = (                                               # 5 optional
-            "diskattachments.disk,"
-            "katelloerrata,"
-            "permissions,"
-            "tags,"
-            "affinitylabels,"
-            "graphicsconsoles,"
-            "cdroms,"
-            "nics,"
-            "watchdogs,"
-            "snapshots,"
-            "applications,"
-            "hostdevices,"
-            "reporteddevices,"
-            "sessions,"
-            "statistics"
-        )
 
         def _get_collection_entity(self):                # 4 above
         """ Overwrite abstract parent method """
@@ -152,7 +132,7 @@
     Put VM custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super(). __init__(*args, **kwargs)
 
     @property
     def nics(self):
@@ -168,7 +148,6 @@
         self.service = self.connection.nics_service()   # self.connection is the VM collection service
         self.entity_service = self.service.nic_service  # same as Collection above
         self.entity_type = types.Nic                    # same as Collection above
-        self.follows = "networkfilterparameters,reporteddevices,statistics,vm" # VM nics links
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
@@ -180,21 +159,24 @@
     Put VmNic custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
   |
 
 follow_link()
 *****************
-  | There are some options to retrieve entity links:
+  | There are several options for retrieving entity links:
   |
-  | 1. Define the **'self.follows'** for a collection, see example above
-  | 2. Through get() e.g.: **get(follow="link_name")**
+  | 1. Through get() e.g.: **get(follow="link_name")**
+  |    For more information about the 'follow' get() parameter see:
+  |    https://www.ovirt.org/develop/release-management/features/infra/link-following.html
+  | 2. Define the **'self.follows'** for a collection
+  |    **self.follows**: If it sets, it will retrieve assigning links when calling get()
   | 3. Use the **ovirtlib.follow_link()** method
   | 4. Use the **CollectionEntity.follow_link()** method
   |
-  | Sections 1..3 will retrieve the entity links, but it will not include the entity service
-  | Options 4 will include the entity service as well if given
+  | Sections 1..3 will retrieve the entity links, but they will not include the entity service
+  | Option 4 will also include the application service if it initializes the 'collection_service' parameter
   | **Note** that you will not need to use *'follow_link()'* if a sub-collections is defined instead
   |
 
@@ -239,9 +221,10 @@ CollectionEntiry
 ****************
   .. code-block:: python
 
-   vm = ovirtlib.vms.get()[0]  # list() return list of CollectionEntiry() classes
-   vm.entity                   # entity, hold the Entity fields and links
-   vm.service                  # service, hold the Entity actions
+   vms = ovirtlib.vms()      # Return list of CollectionEntiry() class
+   vms = ovirtlib.vms.get()  # Same as above
+   vms[0].entity             # entity holds the Entity fields and links
+   vms[0].service            # service holds the Entity actions
 
   At the above commands **vm.entity** is equivalent to:
 
@@ -307,6 +290,18 @@ CollectionEntiry
 
   engine.hosts.get_names()
 
+ .. code-block:: python
+
+  """ Add Example, use the 'entity_type()' of each collection to add new entities to a collection """
+  vm1 = engine.vms()[0]  # Get the first VM
+  vnic_profile = engine.vnic_profiles()[0]  # Get the first vNIC Profile
+
+  new_nic = vm1.nics.entity_type(  # Use the entity_type to create the new NIC object
+      name='new_nic_name',
+      vnic_profile=engine.vnic_profiles.entity_type(id=vnic_profile.entity.id)
+  )
+
+  vm1.nics.service.add(new_nic)  # Add the new NIC to selected VM
 
 
 **Contribute**

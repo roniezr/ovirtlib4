@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import ovirtsdk4
+
 from . import (
     clusters,
     data_centers,

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from .system_service import CollectionService, CollectionEntity
 import ovirtsdk4.types as types
+
+from .system_service import CollectionService, CollectionEntity
 
 
 class Pools(CollectionService):
@@ -25,4 +26,4 @@ class PoolEntity(CollectionEntity):
     Put Pool custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)

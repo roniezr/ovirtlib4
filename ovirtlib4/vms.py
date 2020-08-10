@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from .system_service import CollectionService, CollectionEntity
 import ovirtsdk4.types as types
+
 from . import defaults, hosts
+from .system_service import CollectionService, CollectionEntity
 
 
 class Vms(CollectionService):
@@ -15,23 +16,6 @@ class Vms(CollectionService):
         self.service = self.connection.system_service().vms_service()
         self.entity_service = self.service.vm_service
         self.entity_type = types.Vm
-        self.follows = (
-            "diskattachments.disk,"
-            "katelloerrata,"
-            "permissions,"
-            "tags,"
-            "affinitylabels,"
-            "graphicsconsoles,"
-            "cdroms,"
-            "nics,"
-            "watchdogs,"
-            "snapshots,"
-            "applications,"
-            "hostdevices,"
-            "reporteddevices,"
-            "sessions,"
-            "statistics"
-        )
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
@@ -65,7 +49,7 @@ class VmEntity(CollectionEntity):
     Put VM custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super(). __init__(*args, **kwargs)
 
     @property
     def nics(self):
@@ -86,7 +70,6 @@ class VmNics(CollectionService):
         self.service = self.connection.nics_service()
         self.entity_service = self.service.nic_service
         self.entity_type = types.Nic
-        self.follows = "networkfilterparameters,reporteddevices,statistics,vm"
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
@@ -98,7 +81,7 @@ class VmNic(CollectionEntity):
     Put VmNic custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super(). __init__(*args, **kwargs)
 
 
 class VmDisks(CollectionService):
@@ -111,7 +94,6 @@ class VmDisks(CollectionService):
         self.service = self.connection.disk_attachments_service()
         self.entity_service = self.service.attachment_service
         self.entity_type = types.DiskAttachment
-        self.follows = "disk,vm"
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
@@ -123,4 +105,4 @@ class VmDisk(CollectionEntity):
     Put VmDisk custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super(). __init__(*args, **kwargs)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+
 import ovirtsdk4.types as types
 
 from .system_service import CollectionService, CollectionEntity
@@ -18,20 +19,6 @@ class Hosts(CollectionService):
         self.service = self.connection.system_service().hosts_service()
         self.entity_service = self.service.host_service
         self.entity_type = types.Host
-        self.follows = (
-            "nics,"
-            "katelloerrata,"
-            "permissions,"
-            "affinitylabels,"
-            "tags,"
-            "devices,"
-            "hooks,"
-            "networkattachments,"
-            "storageconnectionextensions,"
-            "unmanagednetworks,"
-            "externalnetworkproviderconfigurations,"
-            "statistics"
-        )
 
     def get_spm_host(self):
         for host in self.list():
@@ -75,15 +62,15 @@ class HostNics(CollectionService):
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
-        return HostNic(connection=self.connection)
+        return HostNicEntity(connection=self.connection)
 
 
-class HostNic(CollectionEntity):
+class HostNicEntity(CollectionEntity):
     """
     Put HostNic custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super(). __init__(*args, **kwargs)
 
 
 class HostStatistics(CollectionService):
@@ -100,7 +87,7 @@ class HostStatistics(CollectionService):
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
-        return HostStatistic(connection=self.connection)
+        return HostStatisticEntity(connection=self.connection)
 
     def verify_statistics_value(self, statistics, expected_values):
         """
@@ -133,9 +120,9 @@ class HostStatistics(CollectionService):
         return found_statistics == len(expected_values)
 
 
-class HostStatistic(CollectionEntity):
+class HostStatisticEntity(CollectionEntity):
     """
     Put HostStatistic custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)

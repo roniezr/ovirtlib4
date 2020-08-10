@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from .system_service import CollectionService, CollectionEntity
 import ovirtsdk4.types as types
+
+from .system_service import CollectionService, CollectionEntity
 
 
 class Disks(CollectionService):
@@ -14,7 +15,6 @@ class Disks(CollectionService):
         self.service = self.connection.system_service().disks_service()
         self.entity_service = self.service.disk_service
         self.entity_type = types.Disk
-        self.follows = "permissions,statistics,disk_profile,quota"
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
@@ -26,4 +26,4 @@ class DiskEntity(CollectionEntity):
     Put Disk custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
