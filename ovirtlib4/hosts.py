@@ -1,25 +1,24 @@
 # -*- coding: utf-8 -*-
 
-from .system_service import CollectionService, CollectionEntity
+import logging
+
 import ovirtsdk4.types as types
+
+from .system_service import CollectionService, CollectionEntity
+
+logger = logging.getLogger(__name__)
 
 
 class Hosts(CollectionService):
     """
     Gives access to all Ovirt Hosts
     """
-    @property
-    def service(self):
-        """ Overwrite abstract parent method """
-        return self.connection.system_service().hosts_service()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def _entity_service(self, id):
-        """ Overwrite abstract parent method """
-        return self.service.host_service(id=id)
-
-    def entity_type(self):
-        """ Overwrite abstract parent method """
-        return types.Host
+        self.service = self.connection.system_service().hosts_service()
+        self.entity_service = self.service.host_service
+        self.entity_type = types.Host
 
     def get_spm_host(self):
         for host in self.list():
@@ -54,55 +53,76 @@ class HostNics(CollectionService):
     """
     Gives access to all Host NICs
     """
-    def service(self):
-        """ Overwrite abstract parent method """
-        return self.connection.nics_service()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def _entity_service(self, id):
-        """ Overwrite abstract parent method """
-        return self.service().nic_service(id=id)
-
-    def entity_type(self):
-        """ Overwrite abstract parent method """
-        return types.HostNic
+        self.service = self.connection.nics_service()
+        self.entity_service = self.service.nic_service
+        self.entity_type = types.HostNic
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
-        return HostNic(connection=self.connection)
+        return HostNicEntity(connection=self.connection)
 
 
-class HostNic(CollectionEntity):
+class HostNicEntity(CollectionEntity):
     """
     Put HostNic custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super(). __init__(*args, **kwargs)
 
 
 class HostStatistics(CollectionService):
     """
     Gives access to all Host NICs
     """
-    def service(self):
-        """ Overwrite abstract parent method """
-        return self.connection.statistics_service()
 
-    def _entity_service(self, id):
-        """ Overwrite abstract parent method """
-        return self.service().statistic_service(id=id)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def entity_type(self):
-        """ Overwrite abstract parent method """
-        return types.Statistic
+        self.service = self.connection.statistics_service()
+        self.entity_service = self.service.statistic_service
+        self.entity_type = types.Statistic
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
-        return HostStatistic(connection=self.connection)
+        return HostStatisticEntity(connection=self.connection)
+
+    def verify_statistics_value(self, statistics, expected_values):
+        """
+        Verify if given statistics values are as expected
+
+        Args:
+            statistics (ovirtlib4.hosts.HostStatistics): List of host statistics
+            check_statistics (list): List of tuples when each tuple includes (statistics name, expression, value)
+
+        Example:
+            expected_values = {
+                "cpu.current.user": "==0" ,
+                "cpu.current.system": ">100",
+            }
+
+        Returns:
+            bool: True if all statistics values are as expected, False otherwise
+        """
+        found_statistics = 0
+
+        for statistic in statistics:
+            if statistic.entity.name in expected_values.keys():
+                found_statistics += 1
+                for value in statistic.entity.values:
+                    logger.debug(f"Verify {statistic.entity.name}={value.datum}")
+                    if value.datum not in [None, ""] and not eval(
+                        f"float(value.datum) {expected_values[statistic.entity.name]}"
+                    ):
+                        return False
+        return found_statistics == len(expected_values)
 
 
-class HostStatistic(CollectionEntity):
+class HostStatisticEntity(CollectionEntity):
     """
     Put HostStatistic custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)

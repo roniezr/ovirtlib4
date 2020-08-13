@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import ovirtsdk4
-from .import(
+
+from . import (
     clusters,
     data_centers,
     disks,
-    domains,
+    storage_domains,
     hosts,
     networks,
     network_providers,
@@ -31,19 +32,20 @@ class OvirtLib(object):
         self.insecure = insecure
 
         self.ovirt_connection = self.connect()
+        params = {"connection": self.ovirt_connection}
 
-        self._hosts = hosts.Hosts(connection=self.ovirt_connection)
-        self._vms = vms.Vms(connection=self.ovirt_connection)
-        self._vnic_profiles = vnic_profiles.VnicProfiles(connection=self.ovirt_connection)
-        self._clusters = clusters.Clusters(connection=self.ovirt_connection)
-        self._data_centers = data_centers.DataCenters(connection=self.ovirt_connection)
-        self._disks = disks.Disks(connection=self.ovirt_connection)
-        self._domains = domains.Domains(connection=self.ovirt_connection)
-        self._networks = networks.Networks(connection=self.ovirt_connection)
-        self._network_providers = network_providers.NetworkProvisers(connection=self.ovirt_connection)
-        self._templates = templates.Templates(connection=self.ovirt_connection)
-        self._pools = pools.Pools(connection=self.ovirt_connection)
-        self._events = events.Events(connection=self.ovirt_connection)
+        self._hosts = hosts.Hosts(**params)
+        self._vms = vms.Vms(**params)
+        self._vnic_profiles = vnic_profiles.VnicProfiles(**params)
+        self._clusters = clusters.Clusters(**params)
+        self._data_centers = data_centers.DataCenters(**params)
+        self._disks = disks.Disks(**params)
+        self._storage_domains = storage_domains.StorageDomains(**params)
+        self._networks = networks.Networks(**params)
+        self._network_providers = network_providers.NetworkProvisers(**params)
+        self._templates = templates.Templates(**params)
+        self._pools = pools.Pools(**params)
+        self._events = events.Events(**params)
 
     def connect(self, *args, **kwargs):
         """ Made the HTTP connection to remote Engine """
@@ -55,6 +57,19 @@ class OvirtLib(object):
             ca_file=self.ca_file,
             *args, **kwargs
         )
+
+    def follow_link(self, obj):
+        """
+        Call to the SDK follow_link() method without any wrapping
+        Follows the `href` attribute of given object, and retrieves the object
+
+        Args:
+            obj: SDK object that include href attribute
+
+        Returns:
+            ovirtsdk4.type.Struct: Any SDK object
+        """
+        return self.ovirt_connection.follow_link(obj=obj)
 
     @property
     def hosts(self):
@@ -81,8 +96,8 @@ class OvirtLib(object):
         return self._disks
 
     @property
-    def domains(self):
-        return self._domains
+    def storage_domains(self):
+        return self._storage_domains
 
     @property
     def networks(self):

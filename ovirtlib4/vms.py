@@ -1,26 +1,21 @@
 # -*- coding: utf-8 -*-
 
-from .system_service import CollectionService, CollectionEntity
 import ovirtsdk4.types as types
-from . import defaults, disks, hosts
+
+from . import defaults, hosts
+from .system_service import CollectionService, CollectionEntity
 
 
 class Vms(CollectionService):
     """
     Gives access to all Ovirt VMs
     """
-    @property
-    def service(self):
-        """ Overwrite abstract parent method """
-        return self.connection.system_service().vms_service()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def _entity_service(self, id):
-        """ Overwrite abstract parent method """
-        return self.service.vm_service(id=id)
-
-    def entity_type(self):
-        """ Overwrite abstract parent method """
-        return types.Vm
+        self.service = self.connection.system_service().vms_service()
+        self.entity_service = self.service.vm_service
+        self.entity_type = types.Vm
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
@@ -54,14 +49,7 @@ class VmEntity(CollectionEntity):
     Put VM custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
-
-    def get_disk_attachments(self):
-        """ Return list of all VM disks: [CollectionEntity] """
-        return self.follow_link(
-            collection_service=disks.Disks(self.connection),
-            link=self.entity.disk_attachments
-        )
+        super(). __init__(*args, **kwargs)
 
     @property
     def nics(self):
@@ -76,17 +64,12 @@ class VmNics(CollectionService):
     """
     Gives access to all VM NICs
     """
-    def service(self):
-        """ Overwrite abstract parent method """
-        return self.connection.nics_service()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def _entity_service(self, id):
-        """ Overwrite abstract parent method """
-        return self.service().nic_service(id=id)
-
-    def entity_type(self):
-        """ Overwrite abstract parent method """
-        return types.Nic
+        self.service = self.connection.nics_service()
+        self.entity_service = self.service.nic_service
+        self.entity_type = types.Nic
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
@@ -98,24 +81,19 @@ class VmNic(CollectionEntity):
     Put VmNic custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super(). __init__(*args, **kwargs)
 
 
 class VmDisks(CollectionService):
     """
     Gives access to all VM attached disks
     """
-    def service(self):
-        """ Overwrite abstract parent method """
-        return self.connection.disk_attachments_service()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def _entity_service(self, id):
-        """ Overwrite abstract parent method """
-        return self.service().attachment_service(id=id)
-
-    def entity_type(self):
-        """ Overwrite abstract parent method """
-        return types.DiskAttachment
+        self.service = self.connection.disk_attachments_service()
+        self.entity_service = self.service.attachment_service
+        self.entity_type = types.DiskAttachment
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
@@ -127,4 +105,4 @@ class VmDisk(CollectionEntity):
     Put VmDisk custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super(). __init__(*args, **kwargs)

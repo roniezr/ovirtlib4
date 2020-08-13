@@ -1,25 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from .system_service import CollectionService, CollectionEntity
 import ovirtsdk4.types as types
+
+from .system_service import CollectionService, CollectionEntity
 
 
 class Templates(CollectionService):
     """
     Gives access to all Ovirt Templates
     """
-    @property
-    def service(self):
-        """ Overwrite abstract parent method """
-        return self.connection.system_service().templates_service()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def _entity_service(self, id):
-        """ Overwrite abstract parent method """
-        return self.service.template_service(id=id)
-
-    def entity_type(self):
-        """ Overwrite abstract parent method """
-        return types.Template
+        self.service = self.connection.system_service().templates_service()
+        self.entity_service = self.service.template_service
+        self.entity_type = types.Template
 
     def _get_collection_entity(self):
         """ Overwrite abstract parent method """
@@ -31,4 +26,4 @@ class TemplateEntity(CollectionEntity):
     Put Template custom functions here
     """
     def __init__(self, *args, **kwargs):
-        CollectionEntity. __init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
