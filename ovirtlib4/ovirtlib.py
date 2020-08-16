@@ -15,7 +15,8 @@ from . import (
     vms,
     vnic_profiles,
     defaults,
-    events
+    events,
+    mac_pools
 )
 
 
@@ -46,6 +47,7 @@ class OvirtLib(object):
         self._templates = templates.Templates(**params)
         self._pools = pools.Pools(**params)
         self._events = events.Events(**params)
+        self._mac_pools = mac_pools.MacPools(**params)
 
     def connect(self, *args, **kwargs):
         """ Made the HTTP connection to remote Engine """
@@ -118,3 +120,7 @@ class OvirtLib(object):
     @property
     def events(self):
         return self._events
+
+    @property
+    def mac_pools(self):
+        return self._mac_pools
