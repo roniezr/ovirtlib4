@@ -2,6 +2,7 @@
 
 import ovirtsdk4.types as types
 
+from . import mac_pools as mac_pool_collection
 from .system_service import CollectionService, CollectionEntity
 
 
@@ -27,3 +28,16 @@ class ClusterEntity(CollectionEntity):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    def mac_pools(self):
+        """
+        Return list of MAC-pools assign to the cluster
+
+        This class returns the entity and service of the individual mac-pool allocated to the cluster
+        To update new mac-pool to the cluster use the ovirtlib4.cluster.service.update()
+        To add new mac-pool use the ovirtlib4.mac_pools.service.add()
+        """
+        return self.follow_link(
+            link=self.entity.mac_pool,
+            collection_service=mac_pool_collection.MacPools(connection=self.connection)
+        )
