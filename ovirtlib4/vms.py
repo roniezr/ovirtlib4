@@ -59,6 +59,10 @@ class VmEntity(CollectionEntity):
     def disks(self):
         return VmDisks(connection=self.service)
 
+    @property
+    def backups(self):
+        return VmBackups(connection=self.service)
+
 
 class VmNics(CollectionService):
     """
@@ -103,6 +107,30 @@ class VmDisks(CollectionService):
 class VmDisk(CollectionEntity):
     """
     Put VmDisk custom functions here
+    """
+    def __init__(self, *args, **kwargs):
+        super(). __init__(*args, **kwargs)
+
+
+class VmBackups(CollectionService):
+    """
+    Gives access to all VM Backups
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.service = self.connection.backups_service()
+        self.entity_service = self.service.backup_service
+        self.entity_type = types.Backup
+
+    def _get_collection_entity(self):
+        """ Overwrite abstract parent method """
+        return VmBackup(connection=self.connection)
+
+
+class VmBackup(CollectionEntity):
+    """
+    Put VmBackup custom functions here
     """
     def __init__(self, *args, **kwargs):
         super(). __init__(*args, **kwargs)

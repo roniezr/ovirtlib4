@@ -34,8 +34,7 @@
  .. code-block:: bash
 
   $ export PYCURL_SSL_LIBRARY=openssl
-  $ pip uninstall pycurl
-  $ pip install pycurl --no-cache-dir
+  $ pip install -I pycurl --no-cache-dir
 
 
 **Introduction**
