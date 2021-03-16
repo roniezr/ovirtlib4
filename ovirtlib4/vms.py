@@ -71,7 +71,7 @@ class VmEntity(CollectionEntity):
             state (str): VM state to wait for (default 'up')
 
         Returns:
-             VmEntity: The updated VM object
+             VmEntity: The updated VM object if start VM succeeded, None otherwise
         """
         if self.get().entity.status.value == 'down':
             self.service.start()
@@ -91,7 +91,7 @@ class VmEntity(CollectionEntity):
             state (str): VM state to wait for (default 'down')
 
         Returns:
-             VmEntity: The updated VM object
+             VmEntity: The updated VM object if stop VM succeeded, None otherwise
         """
         self.service.stop()
         vm = self.get(wait_for=f"entity.status.value == '{state}'", *args, **kwargs)
