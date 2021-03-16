@@ -63,7 +63,7 @@ class VmEntity(CollectionEntity):
     def backups(self):
         return VmBackups(connection=self.service)
 
-    def start_and_wait(self, state='up'):
+    def start_and_wait(self, state='up', wait_timeout=defaults.VM_START_TIMEOUT, *args, **kwargs):
         """
         Start VM and wait for it to start
 
@@ -77,11 +77,13 @@ class VmEntity(CollectionEntity):
             self.service.start()
         vm = self.get(
             wait_for=f"entity.status.value == '{state}'",
-            wait_timeout=defaults.VM_START_TIMEOUT
+            wait_timeout=wait_timeout,
+            *args,
+            **kwargs
         )
         return vm[0] if vm else None
 
-    def stop_and_wait(self, state='down'):
+    def stop_and_wait(self, state='down', *args, **kwargs):
         """
         Stop VM and wait for it to stop
 
@@ -92,7 +94,7 @@ class VmEntity(CollectionEntity):
              VmEntity: The updated VM object
         """
         self.service.stop()
-        vm = self.get(wait_for=f"entity.status.value == '{state}'")
+        vm = self.get(wait_for=f"entity.status.value == '{state}'", *args, **kwargs)
         return vm[0] if vm else None
 
 
