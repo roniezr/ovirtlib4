@@ -63,6 +63,38 @@ class VmEntity(CollectionEntity):
     def backups(self):
         return VmBackups(connection=self.service)
 
+    def start_and_wait(self, state='up'):
+        """
+        Start VM and wait for it to start
+
+        Args:
+            state (str): VM state to wait for (default 'up')
+
+        Returns:
+             VmEntity: The updated VM object
+        """
+        if self.get().entity.status.value == 'down':
+            self.service.start()
+        vm = self.get(
+            wait_for=f"entity.status.value == '{state}'",
+            wait_timeout=defaults.VM_START_TIMEOUT
+        )
+        return vm[0] if vm else None
+
+    def stop_and_wait(self, state='down'):
+        """
+        Stop VM and wait for it to stop
+
+        Args:
+            state (str): VM state to wait for (default 'down')
+
+        Returns:
+             VmEntity: The updated VM object
+        """
+        self.service.stop()
+        vm = self.get(wait_for=f"entity.status.value == '{state}'")
+        return vm[0] if vm else None
+
 
 class VmNics(CollectionService):
     """
