@@ -97,6 +97,12 @@ class VmEntity(CollectionEntity):
         vm = self.get(wait_for=f"entity.status.value == '{state}'", *args, **kwargs)
         return vm[0] if vm else None
 
+    def get_management_nic(self, default_bridge=defaults.MNG_BRIDGE):
+        for nic in self.nics(follow="vnic_profile"):
+            if nic.entity.vnic_profile.name == default_bridge:
+                return nic
+        return None
+
 
 class VmNics(CollectionService):
     """
