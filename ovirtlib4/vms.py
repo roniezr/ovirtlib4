@@ -97,9 +97,18 @@ class VmEntity(CollectionEntity):
         vm = self.get(wait_for=f"entity.status.value == '{state}'", *args, **kwargs)
         return vm[0] if vm else None
 
-    def get_management_nic(self, default_bridge=defaults.MNG_BRIDGE):
+    def get_management_nic(self, mng_network=defaults.MNG_NETWORK):
+        """
+        Return the management vNIC of the VM
+
+        Args:
+            mng_network (str): Management network name at the Ovirt Engine
+
+        Returns:
+            VmNic: ovirtlib VmNic class if vNIC was found, None otherwise
+        """
         for nic in self.nics(follow="vnic_profile"):
-            if nic.entity.vnic_profile.name == default_bridge:
+            if nic.entity.vnic_profile.name == mng_network:
                 return nic
         return None
 
