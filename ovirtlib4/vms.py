@@ -2,7 +2,7 @@
 
 import ovirtsdk4.types as types
 
-from . import defaults, hosts
+from . import defaults, hosts, clusters, vnic_profiles
 from .system_service import CollectionService, CollectionEntity
 
 
@@ -97,18 +97,20 @@ class VmEntity(CollectionEntity):
         vm = self.get(wait_for=f"entity.status.value == '{state}'", *args, **kwargs)
         return vm[0] if vm else None
 
-    def get_management_nic(self, mng_network=defaults.MNG_NETWORK):
+    def get_management_nic(self):
         """
-        Return the management vNIC of the VM
+        Gets the management vNIC of the VM
 
         Args:
             mng_network (str): Management network name at the Ovirt Engine
 
         Returns:
-            VmNic: ovirtlib VmNic class if vNIC was found, None otherwise
+            VmNic: ovirtlib VmNic object if vNIC was found, None otherwise
         """
-        for nic in self.nics(follow="vnic_profile"):
-            if nic.entity.vnic_profile.name == mng_network:
+        vm_cluster = clusters.Clusters(connection=self.connection).get_entity_by_id(id=self.entity.cluster.id)
+        mng_network = vm_cluster.get_management_network()
+        for nic in self.nics():
+            if nic.get_profile().entity.network.id == mng_network.entity.id:
                 return nic
         return None
 
@@ -135,6 +137,17 @@ class VmNic(CollectionEntity):
     """
     def __init__(self, *args, **kwargs):
         super(). __init__(*args, **kwargs)
+
+    def get_profile(self):
+        """
+        Gets the vNIC profile
+
+        Returns:
+            ovirtlib4.vnic_profile.VnicProfileEntity: ovirlib4 VnicProfileEntity object
+        """
+        return vnic_profiles.VnicProfiles(connection=self.root_connection).get_entity_by_id(
+            id=self.entity.vnic_profile.id
+        )
 
 
 class VmDisks(CollectionService):

@@ -318,6 +318,14 @@ class CollectionEntity(RootService):
     def service(self, service):
         self._service = service
 
+    @property
+    def root_connection(self):
+        """
+        Expose the main connection to tier3 collection entities
+        e.g.: engine.vms[0].nics[0] - one nic object is tier3
+        """
+        return self.connection._connection
+
     def follow_link(self, link, collection_service=None):
         """
         Follow a link of an Entity and retrieve its attached entities
