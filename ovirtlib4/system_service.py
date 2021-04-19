@@ -4,6 +4,7 @@ import collections
 import logging
 import types
 from collections.abc import Iterable
+from . import clusters
 
 from .utils.sampler import APITimeout
 from .utils.sampler import TimeoutingSampler
@@ -321,7 +322,7 @@ class CollectionEntity(RootService):
     @property
     def root_connection(self):
         """
-        Expose the main connection to tier3 collection entities
+        Exposes the main connection to tier3 collection entities
         e.g.: engine.vms[0].nics[0] - one nic object is tier3
         """
         return self.connection._connection
@@ -353,3 +354,22 @@ class CollectionEntity(RootService):
             )
             collection_entities.append(collection_entity)
         return collection_entities
+
+
+class ClusterEntity(object):
+    """
+    Represents an ovirtlib entity associates with a cluster
+    """
+    @property
+    def get_cluster(self):
+        """
+        Gets the Cluster that the entity is associate with
+
+        Returns:
+             ClusterEntity: ovirtlib4 ClusterEntity object if entity has a cluster ID, None otherwise
+        """
+        try:
+            cluster_id = self.entity.cluster.id
+        except AttributeError:
+            return None
+        return clusters.Clusters(connection=self.connection).get_entity_by_id(id=cluster_id)

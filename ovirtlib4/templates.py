@@ -2,7 +2,7 @@
 
 import ovirtsdk4.types as types
 
-from .system_service import CollectionService, CollectionEntity
+from .system_service import CollectionService, CollectionEntity, ClusterEntity
 
 
 class Templates(CollectionService):
@@ -21,7 +21,7 @@ class Templates(CollectionService):
         return TemplateEntity(connection=self.connection)
 
 
-class TemplateEntity(CollectionEntity):
+class TemplateEntity(CollectionEntity, ClusterEntity):
     """
     Put Template custom functions here
     """

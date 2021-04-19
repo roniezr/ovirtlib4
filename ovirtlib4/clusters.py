@@ -50,7 +50,6 @@ class ClusterEntity(CollectionEntity):
             ovirtib4.NetworkEntity: ovirtLib4 NetworkEntity object
         """
         for network in self.get(follow="networks").entity.networks:
-            for usage in network.usages:
-                if usage.value == 'management':
-                    return networks.Networks(self.connection).get_entity_by_id(id=network.id)
+            if types.NetworkUsage.MANAGEMENT in network.usages:
+                return networks.Networks(self.connection).get_entity_by_id(id=network.id)
         return None

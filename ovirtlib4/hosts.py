@@ -4,7 +4,7 @@ import logging
 
 import ovirtsdk4.types as types
 
-from .system_service import CollectionService, CollectionEntity
+from .system_service import CollectionService, CollectionEntity, ClusterEntity
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class Hosts(CollectionService):
         return HostEntity(connection=self.connection)
 
 
-class HostEntity(CollectionEntity):
+class HostEntity(CollectionEntity, ClusterEntity):
     """
     Put Host custom functions here
     """
