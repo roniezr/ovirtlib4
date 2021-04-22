@@ -3,7 +3,7 @@
 import ovirtsdk4.types as types
 
 from . import defaults, hosts, vnic_profiles
-from .system_service import CollectionService, CollectionEntity, ClusterEntity
+from .system_service import CollectionService, CollectionEntity, ClusterAssociated
 
 
 class Vms(CollectionService):
@@ -44,7 +44,7 @@ class Vms(CollectionService):
         return None
 
 
-class VmEntity(CollectionEntity, ClusterEntity):
+class VmEntity(CollectionEntity, ClusterAssociated):
     """
     Put VM custom functions here
     """

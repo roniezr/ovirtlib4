@@ -356,7 +356,7 @@ class CollectionEntity(RootService):
         return collection_entities
 
 
-class ClusterEntity(object):
+class ClusterAssociated(object):
     """
     Represents an ovirtlib entity associated with a cluster
     """
@@ -366,7 +366,7 @@ class ClusterEntity(object):
         Gets the cluster the entity is associated with
 
         Returns:
-             ClusterEntity: ovirtlib4 ClusterEntity object if entity has a cluster ID, None otherwise
+             ClusterAssociated: ovirtlib4 ClusterEntity object if entity has a cluster ID, None otherwise
         """
         try:
             cluster_id = self.entity.cluster.id
