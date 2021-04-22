@@ -358,12 +358,12 @@ class CollectionEntity(RootService):
 
 class ClusterEntity(object):
     """
-    Represents an ovirtlib entity associates with a cluster
+    Represents an ovirtlib entity associated with a cluster
     """
     @property
     def get_cluster(self):
         """
-        Gets the Cluster that the entity is associate with
+        Gets the cluster the entity is associated with
 
         Returns:
              ClusterEntity: ovirtlib4 ClusterEntity object if entity has a cluster ID, None otherwise
