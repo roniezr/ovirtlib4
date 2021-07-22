@@ -2,7 +2,7 @@
 
 import ovirtsdk4.types as types
 
-from . import mac_pools as mac_pool_collection
+from . import mac_pools as mac_pool_collection, networks
 from .system_service import CollectionService, CollectionEntity
 
 
@@ -41,3 +41,15 @@ class ClusterEntity(CollectionEntity):
             link=self.entity.mac_pool,
             collection_service=mac_pool_collection.MacPools(connection=self.connection)
         )
+
+    def get_management_network(self):
+        """
+        Gets the management network of the cluster
+
+        Returns:
+            ovirtib4.NetworkEntity: ovirtLib4 NetworkEntity object
+        """
+        for network in self.get(follow="networks").entity.networks:
+            if types.NetworkUsage.MANAGEMENT in network.usages:
+                return networks.Networks(self.connection).get_entity_by_id(id=network.id)
+        return None

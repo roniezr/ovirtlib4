@@ -2,8 +2,8 @@
 
 import ovirtsdk4.types as types
 
-from . import defaults, hosts
-from .system_service import CollectionService, CollectionEntity
+from . import defaults, hosts, vnic_profiles
+from .system_service import CollectionService, CollectionEntity, ClusterAssociated
 
 
 class Vms(CollectionService):
@@ -44,7 +44,7 @@ class Vms(CollectionService):
         return None
 
 
-class VmEntity(CollectionEntity):
+class VmEntity(CollectionEntity, ClusterAssociated):
     """
     Put VM custom functions here
     """
@@ -63,7 +63,7 @@ class VmEntity(CollectionEntity):
     def backups(self):
         return VmBackups(connection=self.service)
 
-    def start_and_wait(self, state='up', wait_timeout=defaults.VM_START_TIMEOUT, *args, **kwargs):
+    def start_and_wait(self, state=types.VmStatus.UP.value, wait_timeout=defaults.VM_START_TIMEOUT, *args, **kwargs):
         """
         Start VM and wait for it to start
 
@@ -73,7 +73,7 @@ class VmEntity(CollectionEntity):
         Returns:
              VmEntity: The updated VM object if start VM succeeded, None otherwise
         """
-        if self.get().entity.status.value == 'down':
+        if self.get().entity.status.value == types.VmStatus.DOWN.value:
             self.service.start()
         vm = self.get(
             wait_for=f"entity.status.value == '{state}'",
@@ -83,7 +83,7 @@ class VmEntity(CollectionEntity):
         )
         return vm[0] if vm else None
 
-    def stop_and_wait(self, state='down', *args, **kwargs):
+    def stop_and_wait(self, state=types.VmStatus.DOWN.value, *args, **kwargs):
         """
         Stop VM and wait for it to stop
 
@@ -96,6 +96,24 @@ class VmEntity(CollectionEntity):
         self.service.stop()
         vm = self.get(wait_for=f"entity.status.value == '{state}'", *args, **kwargs)
         return vm[0] if vm else None
+
+    def get_management_nic(self):
+        """
+        Gets the management vNIC of the VM
+
+        Args:
+            mng_network (str): Management network name
+
+        Returns:
+            VmNic: ovirtlib VmNic object if vNIC was found, None otherwise
+        """
+        cluster = self.get_cluster
+        if cluster:
+            mng_network = cluster.get_management_network()
+            for nic in self.nics():
+                if nic.get_vnic_profile().entity.network.id == mng_network.entity.id:
+                    return nic
+        return None
 
 
 class VmNics(CollectionService):
@@ -120,6 +138,17 @@ class VmNic(CollectionEntity):
     """
     def __init__(self, *args, **kwargs):
         super(). __init__(*args, **kwargs)
+
+    def get_vnic_profile(self):
+        """
+        Gets the vNIC profile
+
+        Returns:
+            ovirtlib4.vnic_profile.VnicProfileEntity: ovirlib4 VnicProfileEntity object
+        """
+        return vnic_profiles.VnicProfiles(connection=self.root_connection).get_entity_by_id(
+            id=self.entity.vnic_profile.id
+        )
 
 
 class VmDisks(CollectionService):
