@@ -22,15 +22,8 @@ from . import (
 
 class OvirtLib(object):
     def __init__(
-            self,
-            host,
-            password,
-            username=defaults.ADMIN_USERNAME,
-            ca_file=None,
-            insecure=True,
-            https=True,
-            logger=None,
-            debug=False
+            self, host, password, username=defaults.ADMIN_USERNAME, ca_file=None, insecure=True, https=True,
+            **kwargs
     ):
 
         self.host = host
@@ -41,10 +34,8 @@ class OvirtLib(object):
         self.password = password
         self.ca_file = ca_file
         self.insecure = insecure
-        self.logger = logger
-        self.debug = debug
 
-        self.ovirt_connection = self.connect()
+        self.ovirt_connection = self.connect(**kwargs)
         params = {"connection": self.ovirt_connection}
 
         self._hosts = hosts.Hosts(**params)
@@ -61,18 +52,15 @@ class OvirtLib(object):
         self._events = events.Events(**params)
         self._mac_pools = mac_pools.MacPools(**params)
 
-    def connect(self):
-        """
-        Connects to the remote oVirt instance.
-        """
+    def connect(self, *args, **kwargs):
+        """ Made the HTTP connection to remote Engine """
         return ovirtsdk4.Connection(
             url=self.url,
             username=self.username,
             password=self.password,
             insecure=self.insecure,
             ca_file=self.ca_file,
-            log=self.logger,
-            debug=self.debug
+            *args, **kwargs
         )
 
     def follow_link(self, obj):
