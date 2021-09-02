@@ -35,7 +35,7 @@ class DadaCenterEntity(CollectionEntity):
 
 class DataCenterStorageDomains(CollectionService):
     """
-    Gives access to all VM NICs
+    Gives access to all Storage Domains belonging to the Data Center
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -51,7 +51,7 @@ class DataCenterStorageDomains(CollectionService):
 
 class DataCenterStorageDomain(CollectionEntity):
     """
-    Put StorageDomain custom functions here
+    Put DataCenterStorageDomain custom functions here
     """
     def __init__(self, *args, **kwargs):
         super(). __init__(*args, **kwargs)
