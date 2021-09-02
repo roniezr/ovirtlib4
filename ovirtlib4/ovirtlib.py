@@ -21,7 +21,10 @@ from . import (
 
 
 class OvirtLib(object):
-    def __init__(self, host, password, username=defaults.ADMIN_USERNAME, ca_file=None, insecure=True, https=True):
+    def __init__(
+            self, host, password, username=defaults.ADMIN_USERNAME, ca_file=None, insecure=True, https=True,
+            **kwargs
+    ):
 
         self.host = host
         self.url = "{http}://{host}/ovirt-engine/api".format(
@@ -32,7 +35,7 @@ class OvirtLib(object):
         self.ca_file = ca_file
         self.insecure = insecure
 
-        self.ovirt_connection = self.connect()
+        self.ovirt_connection = self.connect(**kwargs)
         params = {"connection": self.ovirt_connection}
 
         self._hosts = hosts.Hosts(**params)
