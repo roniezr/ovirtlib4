@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import ipaddress
 import ovirtsdk4.types as types
 
 from . import defaults, hosts, vnic_profiles
-from .system_service import CollectionService, CollectionEntity, ClusterAssociated
+from .system_service import CollectionService, CollectionEntity, ClusterAssociated, OvirtService
 
 
 class Vms(CollectionService):
@@ -43,6 +44,72 @@ class Vms(CollectionService):
                 return hosts.Hosts(self.connection).get_entity_by_id(id=host_id)
         return None
 
+    @property
+    def import_vm(self):
+        """
+        Import an external VM
+
+        Example:
+            engine.vms.import_vm(
+                vm=engine.vms.import_vm.entity_type(
+                    vm=types.Vm(name="vm_name"),
+                    name="vm_name",
+                    username="admin",
+                    password="admin",
+                    provider=types.ExternalVmProviderType(external_type),
+                    url="ova:///root/file.tar.gz",  # /root/file.tar.gz found at the host_name below
+                    cluster=types.Cluster(name="cluster_name"),
+                    storage_domain=types.StorageDomain(name="storage_name"),
+                    sparse=external_vm.get('sparse', True),
+                    host=types.Host(name="host_name"),
+                )
+            )
+        """
+        return ImportVm(connection=self.connection)
+
+    @property
+    def import_template(self):
+        """
+        Import VM from template
+
+        Example:
+            engine.vms.import_template(
+                vm=engine.vms.import_template.entity_type(
+                    clone=None,
+                    cluster=None,
+                    cpu_profile=None,
+                    host=None,
+                    quota=None,
+                    storage_domain=None,
+                    template=None,
+                    url=None,
+                )
+            )
+        """
+        return ImportTemplate(connection=self.connection)
+
+
+class ImportVm(OvirtService):
+    """
+    Handle import VM methods
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.service = self.connection.system_service().external_vm_imports_service()
+        self.entity_type = types.ExternalVmImport
+
+
+class ImportTemplate(OvirtService):
+    """
+    Handle import VM Template methods
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.service = self.connection.system_service().external_template_imports_service()
+        self.entity_type = types.ExternalTemplateImport
+
 
 class VmEntity(CollectionEntity, ClusterAssociated):
     """
@@ -62,6 +129,10 @@ class VmEntity(CollectionEntity, ClusterAssociated):
     @property
     def backups(self):
         return VmBackups(connection=self.service)
+
+    @property
+    def reported_devices(self):
+        return VmReportedDevices(connection=self.service)
 
     def start_and_wait(self, state=types.VmStatus.UP.value, wait_timeout=defaults.VM_START_TIMEOUT, *args, **kwargs):
         """
@@ -150,6 +221,26 @@ class VmNic(CollectionEntity):
             id=self.entity.vnic_profile.id
         )
 
+    def get_ips(self, ip_version=ipaddress.IPv4Address):
+        """
+        Get VM IPs
+
+        Args:
+            ip_version (ipaddress): IP version to retrieve, default v4
+
+        Returns:
+            list (str): List of IPs
+        """
+        reported_devices = self.get(follow="reported_devices").entity.reported_devices
+        if reported_devices:
+            for reported_device in reported_devices:
+                if reported_device and hasattr(reported_device, 'ips'):
+                    return [
+                        ip.address for ip in reported_device.ips
+                        if type(ipaddress.ip_address(ip.address)) == ip_version
+                    ]
+        return []
+
 
 class VmDisks(CollectionService):
     """
@@ -194,6 +285,30 @@ class VmBackups(CollectionService):
 class VmBackup(CollectionEntity):
     """
     Put VmBackup custom functions here
+    """
+    def __init__(self, *args, **kwargs):
+        super(). __init__(*args, **kwargs)
+
+
+class VmReportedDevices(CollectionService):
+    """
+    Gives access to all VM Reported Devices
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.service = self.connection.reported_devices_service()
+        self.entity_service = self.service.reported_device_service
+        self.entity_type = types.ReportedDevice
+
+    def _get_collection_entity(self):
+        """ Overwrite abstract parent method """
+        return VmReportedDevice(connection=self.connection)
+
+
+class VmReportedDevice(CollectionEntity):
+    """
+    Put VmReportedDevice custom functions here
     """
     def __init__(self, *args, **kwargs):
         super(). __init__(*args, **kwargs)
