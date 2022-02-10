@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import ipaddress
 import ovirtsdk4.types as types
 
 from . import defaults, hosts, vnic_profiles
@@ -62,6 +63,10 @@ class VmEntity(CollectionEntity, ClusterAssociated):
     @property
     def backups(self):
         return VmBackups(connection=self.service)
+
+    @property
+    def reported_devices(self):
+        return VmReportedDevices(connection=self.service)
 
     def start_and_wait(self, state=types.VmStatus.UP.value, wait_timeout=defaults.VM_START_TIMEOUT, *args, **kwargs):
         """
@@ -150,6 +155,26 @@ class VmNic(CollectionEntity):
             id=self.entity.vnic_profile.id
         )
 
+    def get_ips(self, ip_version=ipaddress.IPv4Address):
+        """
+        Get VM IPs
+
+        Args:
+            ip_version (ipaddress): IP version to retrieve, default v4
+
+        Returns:
+            list (str): List of IPs
+        """
+        reported_devices = self.get(follow="reported_devices").entity.reported_devices
+        if reported_devices:
+            for reported_device in reported_devices:
+                if reported_device and hasattr(reported_device, 'ips'):
+                    return [
+                        ip.address for ip in reported_device.ips
+                        if type(ipaddress.ip_address(ip.address)) == ip_version
+                    ]
+        return []
+
 
 class VmDisks(CollectionService):
     """
@@ -194,6 +219,30 @@ class VmBackups(CollectionService):
 class VmBackup(CollectionEntity):
     """
     Put VmBackup custom functions here
+    """
+    def __init__(self, *args, **kwargs):
+        super(). __init__(*args, **kwargs)
+
+
+class VmReportedDevices(CollectionService):
+    """
+    Gives access to all VM Reported Devices
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.service = self.connection.reported_devices_service()
+        self.entity_service = self.service.reported_device_service
+        self.entity_type = types.ReportedDevice
+
+    def _get_collection_entity(self):
+        """ Overwrite abstract parent method """
+        return VmReportedDevice(connection=self.connection)
+
+
+class VmReportedDevice(CollectionEntity):
+    """
+    Put VmReportedDevice custom functions here
     """
     def __init__(self, *args, **kwargs):
         super(). __init__(*args, **kwargs)

@@ -151,7 +151,7 @@ class RootService(object):
         return func(*args, **kwargs)
 
 
-class CollectionService(RootService):
+class OvirtService(RootService):
     """
     Abstract class, represent an oVirt collection
     """
@@ -159,18 +159,42 @@ class CollectionService(RootService):
         super().__init__(*args, **kwargs)
 
         self._service = NotImplementedError
-        self._entity_service = NotImplementedError
         self._entity_type = NotImplementedError
 
     @property
     def service(self):
-        """ Return the main collection service e.g.: vms_service(), hosts_service() """
+        """ Returns the ovirt service """
         return self._service
 
     @service.setter
     def service(self, service):
         """ The collection service must be set by the inherit class """
         self._service = service
+
+    @property
+    def entity_type(self):
+        """
+        Returns an individual entity type managed by the self.service
+
+        The return type is a class from: ovirtsdk4.types
+        The type is required to add or modify an entity
+        user can use ovirtsdk4.types or get the Struct type by calling this method
+        """
+        return self._entity_type
+
+    @entity_type.setter
+    def entity_type(self, entity_type):
+        """ The entity type must be set by the inherit class """
+        self._entity_type = entity_type
+
+
+class CollectionService(OvirtService):
+    """
+    Abstract class, represent an oVirt collection
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._entity_service = NotImplementedError
 
     @property
     def entity_service(self):
@@ -181,22 +205,6 @@ class CollectionService(RootService):
     def entity_service(self, entity_service):
         """ The _entity_service must be set by the inherit class """
         self._entity_service = entity_service
-
-    @property
-    def entity_type(self):
-        """
-        Abstract method, return an individual entity type of the collection
-        The return type is a class from: ovirtsdk4.types
-
-        The type is required to add or modify a collection entity
-        user can use ovirtsdk4.types or get the Struct type by calling this method
-        """
-        return self._entity_type
-
-    @entity_type.setter
-    def entity_type(self, entity_type):
-        """ The entity type must be set by the inherit class """
-        self._entity_type = entity_type
 
     def get_entity_by_id(self, id):
         """
