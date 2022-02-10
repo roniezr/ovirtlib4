@@ -4,7 +4,7 @@ import ipaddress
 import ovirtsdk4.types as types
 
 from . import defaults, hosts, vnic_profiles
-from .system_service import CollectionService, CollectionEntity, ClusterAssociated, OvirtService
+from .system_service import CollectionService, CollectionEntity, ClusterAssociated
 
 
 class Vms(CollectionService):
@@ -43,72 +43,6 @@ class Vms(CollectionService):
             if host_id:
                 return hosts.Hosts(self.connection).get_entity_by_id(id=host_id)
         return None
-
-    @property
-    def import_vm(self):
-        """
-        Import an external VM
-
-        Example:
-            engine.vms.import_vm(
-                vm=engine.vms.import_vm.entity_type(
-                    vm=types.Vm(name="vm_name"),
-                    name="vm_name",
-                    username="admin",
-                    password="admin",
-                    provider=types.ExternalVmProviderType(external_type),
-                    url="ova:///root/file.tar.gz",  # /root/file.tar.gz found at the host_name below
-                    cluster=types.Cluster(name="cluster_name"),
-                    storage_domain=types.StorageDomain(name="storage_name"),
-                    sparse=external_vm.get('sparse', True),
-                    host=types.Host(name="host_name"),
-                )
-            )
-        """
-        return ImportVm(connection=self.connection)
-
-    @property
-    def import_template(self):
-        """
-        Import VM from template
-
-        Example:
-            engine.vms.import_template(
-                vm=engine.vms.import_template.entity_type(
-                    clone=None,
-                    cluster=None,
-                    cpu_profile=None,
-                    host=None,
-                    quota=None,
-                    storage_domain=None,
-                    template=None,
-                    url=None,
-                )
-            )
-        """
-        return ImportTemplate(connection=self.connection)
-
-
-class ImportVm(OvirtService):
-    """
-    Handle import VM methods
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.service = self.connection.system_service().external_vm_imports_service()
-        self.entity_type = types.ExternalVmImport
-
-
-class ImportTemplate(OvirtService):
-    """
-    Handle import VM Template methods
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.service = self.connection.system_service().external_template_imports_service()
-        self.entity_type = types.ExternalTemplateImport
 
 
 class VmEntity(CollectionEntity, ClusterAssociated):

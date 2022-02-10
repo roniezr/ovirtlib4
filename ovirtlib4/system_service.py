@@ -153,7 +153,7 @@ class RootService(object):
 
 class OvirtService(RootService):
     """
-    Abstract class, represent an oVirt service with its manage 'type' object
+    Abstract class, represent an oVirt collection
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -163,7 +163,7 @@ class OvirtService(RootService):
 
     @property
     def service(self):
-        """ Return the ovirt service """
+        """ Returns the ovirt service """
         return self._service
 
     @service.setter
@@ -174,9 +174,9 @@ class OvirtService(RootService):
     @property
     def entity_type(self):
         """
-        Abstract method, return an individual entity type manage by the self.service
-        The return type is a class from: ovirtsdk4.types
+        Returns an individual entity type managed by the self.service
 
+        The return type is a class from: ovirtsdk4.types
         The type is required to add or modify an entity
         user can use ovirtsdk4.types or get the Struct type by calling this method
         """
