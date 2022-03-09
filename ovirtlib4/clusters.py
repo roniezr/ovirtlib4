@@ -53,3 +53,22 @@ class ClusterEntity(CollectionEntity):
             if types.NetworkUsage.MANAGEMENT in network.usages:
                 return networks.Networks(self.connection).get_entity_by_id(id=network.id)
         return None
+
+
+class ClusterAssociated(object):
+    """
+    Represents an ovirtlib entity associated with a cluster
+    """
+    @property
+    def get_cluster(self):
+        """
+        Gets the cluster the entity is associated with
+
+        Returns:
+             ClusterAssociated: ovirtlib4 ClusterEntity object if entity has a cluster ID, None otherwise
+        """
+        try:
+            cluster_id = self.entity.cluster.id
+        except AttributeError:
+            return None
+        return Clusters(connection=self.connection).get_entity_by_id(id=cluster_id)

@@ -4,7 +4,6 @@ import collections
 import logging
 import types
 from collections.abc import Iterable
-from . import clusters
 
 from .utils.sampler import APITimeout
 from .utils.sampler import TimeoutingSampler
@@ -362,22 +361,3 @@ class CollectionEntity(RootService):
             )
             collection_entities.append(collection_entity)
         return collection_entities
-
-
-class ClusterAssociated(object):
-    """
-    Represents an ovirtlib entity associated with a cluster
-    """
-    @property
-    def get_cluster(self):
-        """
-        Gets the cluster the entity is associated with
-
-        Returns:
-             ClusterAssociated: ovirtlib4 ClusterEntity object if entity has a cluster ID, None otherwise
-        """
-        try:
-            cluster_id = self.entity.cluster.id
-        except AttributeError:
-            return None
-        return clusters.Clusters(connection=self.connection).get_entity_by_id(id=cluster_id)

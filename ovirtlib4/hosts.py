@@ -4,7 +4,8 @@ import logging
 
 import ovirtsdk4.types as types
 
-from .system_service import CollectionService, CollectionEntity, ClusterAssociated
+from .clusters import ClusterAssociated
+from .system_service import CollectionService, CollectionEntity
 
 logger = logging.getLogger(__name__)
 
