@@ -68,6 +68,10 @@ class VmEntity(CollectionEntity, ClusterAssociated):
     def reported_devices(self):
         return VmReportedDevices(connection=self.service)
 
+    @property
+    def snapshots(self):
+        return VmSnapshots(connection=self.service)
+
     def start_and_wait(self, state=types.VmStatus.UP.value, wait_timeout=defaults.VM_START_TIMEOUT, *args, **kwargs):
         """
         Start VM and wait for it to start
@@ -243,6 +247,30 @@ class VmReportedDevices(CollectionService):
 class VmReportedDevice(CollectionEntity):
     """
     Put VmReportedDevice custom functions here
+    """
+    def __init__(self, *args, **kwargs):
+        super(). __init__(*args, **kwargs)
+
+
+class VmSnapshots(CollectionService):
+    """
+    Gives access to all VM Snapshots
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.service = self.connection.snapshots_service()
+        self.entity_service = self.service.snapshot_service
+        self.entity_type = types.Snapshot
+
+    def _get_collection_entity(self):
+        """ Overwrite abstract parent method """
+        return VmSnapshot(connection=self.connection)
+
+
+class VmSnapshot(CollectionEntity):
+    """
+    Put VmSnapshot custom functions here
     """
     def __init__(self, *args, **kwargs):
         super(). __init__(*args, **kwargs)
